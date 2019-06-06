@@ -6,15 +6,7 @@ import json
 from django.contrib.gis.geos import GEOSGeometry
 
 
-class Test_TestCommon(unittest.TestCase):
-    def setUp(self):
-        self.dict_crs = {'type': 'EPSG', 'properties': {
-                    'code': 4326, 'coordinate_order': [1, 0],
-                    'name': 'name_to_allow'}}
-        self.dict_raw_geojson_str = {'type': 'FeatureCollection', 'crs':
-                                     self.dict_crs, "features": []}
-        self.raw_geojson_str = json.dumps(self.dict_raw_geojson_str)
-
+class Test_TestCommon_CsvDictReader(unittest.TestCase):
     def test_csvdirectreader(self):
         csvfile = StringIO()
         fieldnames = ['Test1']
@@ -52,6 +44,16 @@ class Test_TestCommon(unittest.TestCase):
         csvdictreader_dialect = common.CsvDictReader(**dialecte_expected)
         self.assertDictEqual(dialecte_expected,
                              csvdictreader_dialect.get_dialect_kwargs())
+
+
+class Test_TestCommon_GeojsonReader(unittest.TestCase):
+    def setUp(self):
+        self.dict_crs = {'type': 'EPSG', 'properties': {
+                    'code': 4326, 'coordinate_order': [1, 0],
+                    'name': 'name_to_allow'}}
+        self.dict_raw_geojson_str = {'type': 'FeatureCollection', 'crs':
+                                     self.dict_crs, "features": []}
+        self.raw_geojson_str = json.dumps(self.dict_raw_geojson_str)
 
     def test_geojsonreader_error(self):
         geojsonreader = common.GeojsonReader(geom="geom")
@@ -94,6 +96,8 @@ class Test_TestCommon(unittest.TestCase):
         array_expected = []
         self.assertSequenceEqual(result_array, array_expected)
 
+
+class Test_TestCommon_IdentifierFromProperty(unittest.TestCase):
     def test_identifierfromproperty(self):
         property_to_remove = "property_to_remove"
 
@@ -106,13 +110,42 @@ class Test_TestCommon(unittest.TestCase):
             'other': 'try'}
         value_expected = record_original.get(property_to_remove)
 
-        dict_res = [
-            row for row in identifierproperty.__call__(record_original)]
+        dict_res = [identifierproperty.__call__(record_original)]
 
         self.assertNotIn(property_to_remove, dict_res[0][1])
         self.assertEqual(value_expected, dict_res[0][0])
         self.assertEqual(2, len(dict_res[0]))
 
+
+class Test_TestCommon_GenerateIdentifier(unittest.TestCase):
+    def setUp(self):
+        self.arguments = ('voici', 'les', 'arguments', 'de', 'tests')
+
+    def test_generateidentifier_empty(self):
+        generate_identifier = common.GenerateIdentifier()
+
+        array_res = [
+            generate_identifier.__call__(self.arguments)]
+
+        self.assertEqual(2, len(array_res[0]))
+        self.assertEqual(self.arguments, array_res[0][1])
+        self.assertTrue(isinstance(array_res[0][0], common.uuid.UUID))
+
+    def test_generateidentifier_error(self):
+        generate_identifier = common.GenerateIdentifier(generator=3)
+        with self.assertRaises(ValueError):
+            generate_identifier.__call__(self.arguments).__next__()
+
+    def test_generateidentifier(self):
+        generate_identifier = common.GenerateIdentifier(generator=print)
+        array_res = [generate_identifier.__call__(self.arguments)]
+        self.assertEqual(2, len(array_res[0]))
+        self.assertEqual(self.arguments, array_res[0][1])
+
+    def test_generateidentifier_error_arguments(self):
+        generate_identifier = common.GenerateIdentifier(generator=abs)
+        with self.assertRaises(ValueError):
+            generate_identifier.__call__(self.arguments).__next__()
 
 
 if __name__ == '__main__':

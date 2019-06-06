@@ -3,12 +3,13 @@ import io
 import json
 import logging
 import uuid
+import inspect
+from uuid import UUID
 from copy import deepcopy
 from io import StringIO,BytesIO
 from bonobo.config import Configurable, Option
 from collections import OrderedDict
 from django.contrib.gis.geos import GEOSGeometry, Point
-from iter import irange
 
 logger = logging.getLogger(__name__)
 
@@ -67,20 +68,19 @@ class IdentifierFromProperty(Configurable):
     property = Option(str, required=True, positional=True)
 
     def __call__(self, record):
-        yield record.pop(self.property), record
+        return record.pop(self.property), record
 
 
 class GenerateIdentifier(Configurable):
     generator = Option(None, required=True, default=lambda: (lambda *args: uuid.uuid4()))
 
     def __call__(self, *args):
-        yield self.generator(*args), args[-1]
+        if not callable(self.generator):
+            raise ValueError(f'Generator {self.generator} must be a callable')
+        else:
+            try:
+                self.generator(*args)
+            except TypeError:
+                raise ValueError(f'Arguments not valid with {self.generator}')
 
-
-total = 0 
-for i in irange(1000):
-    total += i
-test = GenerateIdentifier(total)
-
-retour = [row for row in test.__call__('arg')]
-print(retour)
+        return self.generator(*args), args[-1]
