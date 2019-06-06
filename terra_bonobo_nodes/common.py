@@ -63,6 +63,8 @@ class GeojsonReader(Configurable):
             properties[self.geom] = GEOSGeometry(json.dumps(feature.get('geometry')))
             yield properties
 
+# Identifier
+
 
 class IdentifierFromProperty(Configurable):
     property = Option(str, required=True, positional=True)
@@ -84,3 +86,32 @@ class GenerateIdentifier(Configurable):
                 raise ValueError(f'Arguments not valid with {self.generator}')
 
         return self.generator(*args), args[-1]
+
+# Attribute
+
+
+class ExcludeAttributes(Configurable):
+    excluded = Option(list, required=True, positional=True)
+
+    def __call__(self, identifier, record):
+        for k in self.excluded:
+            if k in record:
+                record.pop(k)
+
+        yield identifier, record
+
+
+class FilterAttributes(Configurable):
+    included = Option(list, required=True, positional=True)
+
+    def __call__(self, identifier, record):
+        record = dict(filter(lambda kv: kv[0] in self.included, record.items()))
+        yield identifier, record
+
+
+class FilterByProperties(Configurable):
+    keep_eval_function = Option(None, required=True, positional=True)
+
+    def __call__(self, identifier, record):
+        if self.keep_eval_function(identifier, record):
+            yield identifier, record

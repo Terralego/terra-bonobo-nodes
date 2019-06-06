@@ -148,5 +148,40 @@ class Test_TestCommon_GenerateIdentifier(unittest.TestCase):
             generate_identifier.__call__(self.arguments).__next__()
 
 
+class Test_TestCommon_ExcludeAttributes(unittest.TestCase):
+    def test_excludeattributes(self):
+        list_to_exclude = ['member_to_exclude_1', 'member_to_exclude_2']
+        exclude_attributes = common.ExcludeAttributes(excluded=list_to_exclude)
+        identifier = "id"
+        record = {'member_to_exclude_1': 'exclusion',
+                  'member_to_exclude_2': 'exclusion2',
+                  'member_to_stay': 'stay'
+                  }
+        array_res = [
+            row for row in exclude_attributes.__call__(identifier, record)]
+
+        record_keys = list(array_res[0][1].keys())
+        self.assertNotEqual(list_to_exclude, record_keys)
+        self.assertEqual(identifier, array_res[0][0])
+        self.assertEqual(2, len(array_res[0]))
+
+
+class Test_TestCommon_FilterAttributes(unittest.TestCase):
+    def test_filterattributes(self):
+        list_to_filter = ['member_to_filter_1', 'member_to_filter_2']
+        filterattributes = common.FilterAttributes(included=list_to_filter)
+        identifier = "id"
+        record = {'member_to_filter_1': 'filter',
+                  'member_to_filter_2': 'filter2',
+                  'member_to_exclude': 'exclusion'}
+
+        result = [row for row in filterattributes.__call__(identifier, record)]
+
+        record_keys = list(result[0][1].keys())
+        self.assertEqual(list_to_filter, record_keys)
+        self.assertEqual(identifier, result[0][0])
+        self.assertEqual(2, len(result[0]))
+
+
 if __name__ == '__main__':
     unittest.main()
