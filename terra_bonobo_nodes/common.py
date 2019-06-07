@@ -10,6 +10,10 @@ from io import StringIO,BytesIO
 from bonobo.config import Configurable, Option
 from collections import OrderedDict
 from django.contrib.gis.geos import GEOSGeometry, Point
+from django.contrib.gis.db.models import Collect
+from django.contrib.postgres.aggregates import ArrayAgg
+from django.db.models import Count, Sum
+from db import KeyFloatTransform
 
 logger = logging.getLogger(__name__)
 
@@ -115,3 +119,28 @@ class FilterByProperties(Configurable):
     def __call__(self, identifier, record):
         if self.keep_eval_function(identifier, record):
             yield identifier, record
+
+
+class MapProperties(Configurable):
+    map_function = Option(None, required=True, positional=True)
+
+    def __call__(self, identifier, record):
+        yield identifier, self.map_function(record)
+
+
+# Geometry
+
+class CollectAndSum(Configurable):
+    geom = Option(str, required=True, positional=True)
+    sum_fields = Option(dict, default={}, positional=True)
+
+    def __call__(self, identifier, features, *args, **kwargs):
+
+        aggregates = {
+            self.geom: Collect(self.geom),
+            'ids': ArrayAgg('id', distinct=True),
+            'point_count': Count('id'),
+            **{k: Sum(KeyFloatTransform(field, 'properties')) for k, field in self.sum_fields.items()}
+        }
+
+        yield identifier, features.aggregate(**aggregates)

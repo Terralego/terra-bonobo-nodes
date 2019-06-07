@@ -183,5 +183,62 @@ class Test_TestCommon_FilterAttributes(unittest.TestCase):
         self.assertEqual(2, len(result[0]))
 
 
+class Test_TestCommon_FilterByProperties(unittest.TestCase):
+    def setUp(self):
+        self.identifier = "id"
+        self.record = {'key_1': 'value_1',
+                       'key_2': 'value_2'}
+
+    def test_filterbyproperties_false(self):
+        keep_eval_function = lambda identfier, record: False
+
+        filterbyproperties = common.FilterByProperties(
+            keep_eval_function=keep_eval_function)
+        filterbyproperties.__call__(self.identifier, self.record)
+
+        result = [
+            row for
+            row in filterbyproperties.__call__(self.identifier, self.record)]
+        expected_result = []
+
+        self.assertSequenceEqual(result, expected_result)
+
+    def test_filterbyproperties_true(self):
+        keep_eval_function = lambda identfier, record: True
+
+        filterbyproperties = common.FilterByProperties(
+            keep_eval_function=keep_eval_function)
+        filterbyproperties.__call__(self.identifier, self.record)
+
+        result = [
+            row for
+            row in filterbyproperties.__call__(self.identifier, self.record)]
+
+        self.assertDictEqual(self.record, result[0][1])
+        self.assertEqual(self.identifier, result[0][0])
+        self.assertEqual(2, len(result[0]))
+
+
+class Test_TestCommon_MapProperties(unittest.TestCase):
+    def setUp(self):
+        self.identifier = "id"
+        self.record = {'key_1': 'value_1',
+                       'key_2': 'value_2'}
+
+    def test_mapproperties(self):
+        map_function = sorted
+        mapproperties = common.MapProperties(map_function=map_function)
+
+        result = [
+            row for
+            row in mapproperties.__call__(self.identifier, self.record)]
+        result_expected = map_function(self.record)
+
+        self.assertEqual(result_expected, result[0][1])
+        self.assertEqual(self.identifier, result[0][0])
+        self.assertEqual(2, len(result[0]))
+
+
+
 if __name__ == '__main__':
     unittest.main()
