@@ -3,17 +3,19 @@ import io
 import json
 import logging
 import uuid
-import inspect
-from uuid import UUID
 from copy import deepcopy
-from io import StringIO,BytesIO
-from bonobo.config import Configurable, Option
-from collections import OrderedDict
-from django.contrib.gis.geos import GEOSGeometry, Point
+from bonobo.config import Configurable, Option, Service
+from bonobo.config.processors import ContextProcessor
+from bonobo.util.objects import ValueHolder
+from django.conf import settings
 from django.contrib.gis.db.models import Collect
+from django.contrib.gis.geos import GEOSGeometry, Point, Polygon, MultiPoint, LineString, GeometryCollection, MultiLineString
+from django.contrib.gis.geos.prototypes.io import wkt_w
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.db.models import Count, Sum
-from db import KeyFloatTransform
+from requests.compat import urljoin
+from terra_bonobo_nodes import db
+
 
 logger = logging.getLogger(__name__)
 
@@ -128,19 +130,154 @@ class MapProperties(Configurable):
         yield identifier, self.map_function(record)
 
 
-# Geometry
+class AttributeToGeometry(Configurable):
+    attribute = Option(str, required=True)
+    geom = Option(str, required=True)
 
-class CollectAndSum(Configurable):
+    def __call__(self, identifier, record):
+        record[self.geom] = self.get_geosgeometry(record.pop(self.attribute))
+        yield identifier, record
+
+    def get_geosgeometry(self, attribute):
+        geom = GEOSGeometry(attribute)
+        if geom.geom_type in ['Polygon', 'MultiPolygon']:
+            geom = geom.buffer(0)
+        elif geom.geom_type in ['LineString', 'MultiLineString']:
+            geom = geom.simplify(0)
+        return geom
+
+
+class AttributesToPointGeometry(Configurable):
+    x = Option(str, required=True)
+    y = Option(str, required=True)
+    geom = Option(str, required=True)
+    srid = Option(int, required=False, default=4326)
+
+    def __call__(self, identifier, record):
+        x = record.pop(self.x)
+        y = record.pop(self.y)
+
+        try:
+            record[self.geom] = Point(float(x), float(y), srid=self.srid)
+        except (TypeError, ValueError) as e:
+            raise ValueError(f'Fails to cast ("{x}", "{y}") to float') from e
+        yield identifier, record
+
+
+class GeometryToJson(Configurable):
+    source = Option(str, required=True, positional=True)
+    destination = Option(str, required=True, positional=True)
+    simplify = Option(float, required=True, positional=True, default=0.0)
+
+    def __call__(self, identifier, properties, *args, **kwargs):
+        properties[self.destination] = json.loads(properties[self.source].simplify(self.simplify).geojson)
+        yield identifier, properties
+
+
+class GeometryToCentroid(Configurable):
     geom = Option(str, required=True, positional=True)
-    sum_fields = Option(dict, default={}, positional=True)
+    geom_dest = Option(str, required=True, positional=True)
 
-    def __call__(self, identifier, features, *args, **kwargs):
+    def __call__(self, identifier, properties, *args, **kwargs):
+        properties[self.geom_dest] = properties[self.geom].centroid
+        yield identifier, properties
 
-        aggregates = {
-            self.geom: Collect(self.geom),
-            'ids': ArrayAgg('id', distinct=True),
-            'point_count': Count('id'),
-            **{k: Sum(KeyFloatTransform(field, 'properties')) for k, field in self.sum_fields.items()}
+
+class Geometry3Dto2D(Configurable):
+    geom = Option(str, required=True, positional=True)
+    geom_dest = Option(str, required=True, positional=True)
+
+    def __call__(self, identifier, properties, *args, **kwargs):
+        geom = properties[self.geom]
+        wkt = wkt_w(dim=2).write(geom).decode()
+        properties[self.geom_dest] = GEOSGeometry(wkt, srid=geom.srid)
+        yield identifier, properties
+
+# Helpers
+
+
+class CopyOnPipelineSplit(Configurable):
+    def __call__(self, identifier, properties):
+        yield deepcopy(identifier), deepcopy(properties)
+
+
+class DropIdentifier(Configurable):
+    def __call__(self, identifier, properties):
+        yield properties
+
+
+class DjangoLog(Configurable):
+    log_level = Option(int, required=False, default=logging.INFO)
+
+    def __call__(self, identifier, record):
+        logger.log(self.log_level, f'{identifier}: {record}')
+        if record.get('geom'):
+            logger.log(self.log_level, f'{record["geom"].ewkt}')
+        return identifier, record
+
+
+class IsochroneCalculation(Configurable):
+    geom = Option(str, positional=True, default='geom')
+    time_limit = Option(int, positional=True, default=600)
+    distance_limit = Option(int, positional=True, default=0)
+    buckets = Option(int, positional=True, default=3)
+    vehicle = Option(str, positional=True, default='car')
+    reverse_flow = Option(bool, positional=True, default=False)
+
+    http = Service('http')
+
+    def __call__(self, identifier, properties, http, *args, **kwargs):
+        point = properties[self.geom]
+
+        payload = {
+            'time_limit': self.time_limit,
+            'distance_limit': self.distance_limit,
+            'buckets': self.buckets,
+            'vehicle': self.vehicle,
+            'reverse_flow': self.reverse_flow,
+            'point': f'{point.y},{point.x}',
         }
 
-        yield identifier, features.aggregate(**aggregates)
+        isochrone_url = urljoin(settings.GRAPHHOPPER, 'isochrone')
+        response = http.get(isochrone_url, params=payload)
+
+        try:
+            response = response.json()
+            for isochrone in response.get('polygons', []):
+                properties = {
+                    self.geom: GEOSGeometry(json.dumps(isochrone.get('geometry'))),
+                    **isochrone.get('properties', {})
+                }
+
+                yield identifier, properties
+
+        except json.JSONDecodeError:
+            logger.error(f'Error decoding isochrone response {response.content}')
+
+
+class UnionOnProperty(Configurable):
+    geom = Option(str, positional=True, default='geom')
+    property = Option(str, positional=True, required=True)
+
+    @ContextProcessor
+    def buffer(self, context, *args, **kwargs):
+        buffer = yield ValueHolder({})
+
+        for level, geometry in buffer.get().items():
+            context.send(
+                level,
+                {
+                    'level': level,
+                    self.geom: geometry
+                }
+            )
+
+    def __call__(self, buffer, identifier, properties, *args, **kwargs):
+
+        key = properties.get(self.property)
+        unions = buffer.get()
+        unions.get(key)
+        unions[key] = (
+            unions.get(key, GEOSGeometry('POINT EMPTY'))
+            | properties.get(self.geom, GEOSGeometry('POINT EMPTY'))
+        )
