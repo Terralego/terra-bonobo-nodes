@@ -14,19 +14,13 @@ class Test_TestTerra_LayerClusters(django.test.TestCase):
             "layer1": Point(4, 6), "layer2": Point(6, 4),
             "layer3": Point(2, 4),
             "layerpolygon": Polygon(((0.0, 0.0), (0.0, 1.0), (1.0, 1.0),
-                (1.0, 0.0), (0.0, 0.0)), srid=4366)
+                                     (1.0, 0.0), (0.0, 0.0)), srid=4366)
         }
         self.layers = []
-        for num_row, row in enumerate(self.geometries):
-            self.layers += [terra.Layer.objects.create(name=row)]
-            terra.Feature.objects.create(geom=self.geometries[row],
-                                         layer=self.layers[num_row])
-
-    # def tearDown(self):
-    #     super(Test_TestTerra_LayerClusters, self).tearDown()
-    #     self.geometries = []
-    #     self.layers = []
-    #     self.layer_names = []
+        for layer_name, geom in self.geometries.items():
+            self.layers += [terra.Layer.objects.create(name=layer_name)]
+            terra.Feature.objects.create(geom=geom,
+                                         layer=self.layers[-1])
 
     def test_layer_cluster(self):
         metric_projection_srid = 4326
@@ -296,14 +290,6 @@ class Test_TestTerra_LayerClusters(django.test.TestCase):
             'example_key_4': 'example_value_4',
             'example_key_5': 'example_value_5',
         }
-
-        # time = properties['times']
-        # for n in range(0, 5):
-        #     for mode_i, limit in enumerate(time_limits):
-        #         print("mode_i:")
-        #         print(mode_i)
-        #         print("limit:")
-        #         print(limit)
 
         accessibilityratiobytime = terra.AccessibilityRatioByTime(
             time_limits=time_limits, property=property_)
