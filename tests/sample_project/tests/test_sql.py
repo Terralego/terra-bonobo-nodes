@@ -1,7 +1,5 @@
 from terra_bonobo_nodes import sql
 import unittest
-import json
-
 
 class Test_TestSql_SQLExtract(unittest.TestCase):
     def test_sql_extractvalid(self):
@@ -15,12 +13,10 @@ class Test_TestSql_SQLExtract(unittest.TestCase):
         sqlextract = sql.SQLExtract(db_alias=db_alias,
                                     identifier=identifier,
                                     sql_query=sql_query)
-        result = next(sqlextract())
-        self.assertEqual(len(result), 2)
-        self.assertIsInstance(result[1], dict)
-        self.assertNotIn(identifier, result[1])
-        self.assertNotIn(result[0], result[1])
-
+        id_result, properties_result = next(sqlextract())
+        self.assertIsInstance(properties_result, dict)
+        self.assertNotIn(identifier, properties_result)
+        self.assertNotIn(id_result, properties_result)
 
     def test_attributefromsql_valid(self):
         db_alias = "default"
@@ -35,10 +31,9 @@ class Test_TestSql_SQLExtract(unittest.TestCase):
         sqlextract = sql.AttributeFromSQL(db_alias=db_alias,
                                           property=property_,
                                           sql_query=sql_query)
-        result = sqlextract(identifier, record)
+        id_result, record_result = sqlextract(identifier, record)
 
-        self.assertEqual(len(result), 2)
-        self.assertEqual(result[0], identifier)
-        self.assertIsInstance(result[1], dict)
-        self.assertIn(property_, result[1])
-        self.assertEqual(len(result[1]), 1)
+        self.assertEqual(id_result, identifier)
+        self.assertIsInstance(record_result, dict)
+        self.assertIn(property_, record_result)
+        self.assertEqual(len(record_result), 1)
