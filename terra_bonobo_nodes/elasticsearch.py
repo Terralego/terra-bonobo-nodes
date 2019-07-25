@@ -1,12 +1,10 @@
 import logging
-import elasticsearch 
 from bonobo.config import Configurable, Option, Service
 from bonobo.config.processors import ContextProcessor
 from bonobo.constants import END, NOT_MODIFIED
 from bonobo.util.objects import ValueHolder
 from elasticsearch import client
 from elasticsearch import helpers
-from elasticsearch import Elasticsearch
 
 logger = logging.getLogger(__name__)
 
