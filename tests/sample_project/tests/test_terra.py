@@ -10,6 +10,7 @@ import django
 
 class Test_TestTerra_LayerClusters(django.test.TestCase):
     def setUp(self):
+        print(terra.__file__)
         self.geometries = {
             "layer1": Point(4, 6), "layer2": Point(6, 4),
             "layer3": Point(2, 4),

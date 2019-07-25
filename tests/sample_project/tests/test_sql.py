@@ -1,6 +1,7 @@
 from terra_bonobo_nodes import sql
 import unittest
 
+
 class Test_TestSql_SQLExtract(unittest.TestCase):
     def test_sql_extractvalid(self):
         db_alias = "default"

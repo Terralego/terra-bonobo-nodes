@@ -268,15 +268,9 @@ class TransitTimeOneToMany(Configurable):
 class TransitTimeOneToOne(TransitTimeOneToMany):
     def __call__(self, *args, **kwargs):
         identifier, properties = super().__call__(*args, **kwargs)
-        # print("super:")
-        # print(super())
-        # print("properties[self.times_property]")
-        # print(properties[self.times_property])
         if properties[self.times_property]:
-            # print("if!!!!!!!!!!!!!!!!!!!!!!!")
             properties[self.times_property] = properties[self.times_property][0][0]
         else:
-            # print("else!!!!!!!!!!!!!!!!!!!!!!!")
             properties[self.times_property] = None
 
         return identifier, properties
