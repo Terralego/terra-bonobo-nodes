@@ -14,8 +14,7 @@ from django.contrib.gis.geos.prototypes.io import wkt_w
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.db.models import Count, Sum
 from requests.compat import urljoin
-from terra_bonobo_nodes import db
-
+from .db import KeyFloatTransform
 
 logger = logging.getLogger(__name__)
 
@@ -121,6 +120,24 @@ class FilterByProperties(Configurable):
     def __call__(self, identifier, record):
         if self.keep_eval_function(identifier, record):
             yield identifier, record
+
+# Geometry
+
+
+class CollectAndSum(Configurable):
+    geom = Option(str, required=True, positional=True)
+    sum_fields = Option(dict, default={}, positional=True)
+
+    def __call__(self, identifier, features, *args, **kwargs):
+
+        aggregates = {
+            self.geom: Collect(self.geom),
+            'ids': ArrayAgg('id', distinct=True),
+            'point_count': Count('id'),
+            **{k: Sum(KeyFloatTransform(field, 'properties')) for k, field in self.sum_fields.items()}
+        }
+
+        yield identifier, features.aggregate(**aggregates)
 
 
 class MapProperties(Configurable):
