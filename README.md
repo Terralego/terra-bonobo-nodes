@@ -1,5 +1,5 @@
-# Example Package
+# terra-bonobo-nodes
 
-This is a simple example package. You can use
-[Github-flavored Markdown](https://guides.github.com/features/mastering-markdown/)
-to write your content.
+This package provides a set of bonobo ETL's nodes to help developpers to
+integrate data in a terralego based app.
+
