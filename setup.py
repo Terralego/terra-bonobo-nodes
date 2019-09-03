@@ -4,7 +4,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="terra_bonobo_nodes",
+    name="terra-bonobo-nodes",
     version="0.1",
     author="Terralego",
     author_email="terralego-pypi@makina-corpus.com",
