@@ -24,3 +24,9 @@ docker-compose run --rm django bash
 ./venv/bin/tox -c tox.ini -e coverage
 ./venv/bin/tox -c tox.ini -e tests
 ```
+
+
+Note for osx users, use ``docker-compose``  this way
+```
+docker-compose -f docker-compose.yml -f docker-compose-osx.yml $args
+```
