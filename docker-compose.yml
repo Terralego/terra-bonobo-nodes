@@ -1,0 +1,33 @@
+---
+version: "3.7"
+x-common: &common
+  environment: &env
+    POSTGRES_DB: db
+    POSTGRES_NAME: db
+    POSTGRES_HOST: db
+    POSTGRES_PORT: 5432
+    POSTGRES_USER: db
+    POSTGRES_PASSWORD: db
+services:
+  db:
+    <<: [ *common ]
+    image: corpusops/pgrouting:10.1-2.5.4
+    volumes: ["data:/var/lib/postgresql"]
+  django:
+    <<: [ *common ]
+    build: {context: "."}
+    image: terra_bonobo_nodes
+    volumes:
+    - ./apt.txt:/app/apt.txt
+    - ./LICENSE:/app/LICENSE
+    - ./MANIFEST.in:/app/MANIFEST.in
+    - ./README.md:/app/README.md
+    - ./requirements.txt:/app/requirements.txt
+    - ./setup.py:/app/setup.py
+    - ./terra_bonobo_nodes:/app/terra_bonobo_nodes
+    - ./test-requirements.txt:/app/test-requirements.txt
+    - ./tests:/app/tests
+    - ./tox.ini:/app/tox.ini
+    - ./.tox:/app/.tox
+volumes:
+  data:

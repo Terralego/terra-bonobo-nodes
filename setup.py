@@ -1,10 +1,15 @@
 import os
+import re
 import setuptools
 
 HERE = os.path.abspath(os.path.dirname(__file__))
 
 README = open(os.path.join(HERE, 'README.md')).read()
 CHANGES = open(os.path.join(HERE, 'CHANGES.md')).read()
+
+with open('requirements.txt') as fic:
+    reqs = [a.strip() for a in fic.read().splitlines()
+            if a.strip() and not re.search('^\\s*(#|-e)', a)]
 
 setuptools.setup(
     name="terra-bonobo-nodes",
@@ -16,14 +21,7 @@ setuptools.setup(
     long_description=README + '\n\n' + CHANGES,
     long_description_content_type="text/markdown",
     url="https://github.com/Terralego/terra-bonobo-nodes",
-    install_requires=[
-        "requests>=2.19,<2.20",
-        "django>=2.2.7",
-        "bonobo>=0.6.0,<0.6.9",
-        "elasticsearch>=0.6.0,<7.0.0",
-        "psycopg2>=2.7",
-        "pytest>=4.5.0,<4.5.9",
-    ],
+    install_requires=reqs,
     dependency_links=[
         "git+https://github.com/jrmi/pyfiles.git@master#egg=pyfiles-0.1",
     ],

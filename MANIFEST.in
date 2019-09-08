@@ -1,0 +1,2 @@
+recursive-include terracommon/accounts/templates/registration/ *
+include LICENSE *txt
