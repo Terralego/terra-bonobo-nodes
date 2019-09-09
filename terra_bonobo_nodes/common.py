@@ -9,7 +9,7 @@ from bonobo.config.processors import ContextProcessor
 from bonobo.util.objects import ValueHolder
 from django.conf import settings
 from django.contrib.gis.db.models import Collect
-from django.contrib.gis.geos import GEOSGeometry, Point, Polygon, MultiPoint, LineString, GeometryCollection, MultiLineString
+from django.contrib.gis.geos import GEOSGeometry, Point, LineString, Polygon  # noqa
 from django.contrib.gis.geos.prototypes.io import wkt_w
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.db.models import Count, Sum

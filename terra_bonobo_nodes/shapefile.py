@@ -35,5 +35,3 @@ class ZipShapefileToGeojson(Configurable):
             os.unlink(tmp_zip.name)
 
         yield value
-
-

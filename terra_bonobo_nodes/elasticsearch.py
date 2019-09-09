@@ -77,7 +77,7 @@ class LoadInES(Configurable):
             context.input._runlevel += 1
             context.input.put((END, END))
             context.input.put(END)
-            # context.input._runlevel += 2
+            # context.input._runlevel += 2  # noqa
             context.step()
 
     def __call__(self, buffer, identifier, properties, es, *args, **kwargs):

@@ -287,7 +287,7 @@ class AccessibilityRatioByTime(Configurable):
         if not transit_times:
             return identifier, properties
         else:
-            # print("transit_times")
+            # print("transit_times")  # noqa
             n_points = len(transit_times)
 
             access = [False] * n_points
