@@ -73,8 +73,11 @@ class LoadInES(Configurable):
         return {
             '_index': self.index,
             '_type': '_doc',
-            '_id': identifier,
-            '_source': properties,
+            '_id': f"{identifier}-{properties['layer']}",
+            '_source': {
+                '_feature_id': identifier,
+                **properties,
+            },
         }
 
 
