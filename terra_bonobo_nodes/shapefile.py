@@ -2,6 +2,7 @@ import logging
 import os
 import subprocess
 import tempfile
+
 from bonobo.config import Configurable
 
 logger = logging.getLogger(__name__)

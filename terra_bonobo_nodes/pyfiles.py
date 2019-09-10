@@ -1,6 +1,8 @@
 import asyncio
 import logging
+
 from bonobo.config import Configurable, Option, Service
+
 logger = logging.getLogger(__name__)
 
 
