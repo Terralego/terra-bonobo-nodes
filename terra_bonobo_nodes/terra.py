@@ -86,8 +86,8 @@ class LoadFeatureInLayer(Configurable):
         buffer = yield ValueHolder([])
 
         if len(buffer):
-            context.input._writable_runlevel += 1
-            context.input._runlevel += 1
+            context.input._writable_runlevel = 1
+            context.input._runlevel = 1
             context.input.put((END, END))
             context.input.put(END)
             context.step()
