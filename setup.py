@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="terra-bonobo-nodes",
-    version="0.1",
+    version="0.1.2",
     author="Terralego",
     author_email="terralego-pypi@makina-corpus.com",
     description="Set of bonobo ETL's nodes for terralego's projects",
