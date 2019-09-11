@@ -272,6 +272,22 @@ class IsochroneCalculation(Configurable):
             logger.error(f'Error decoding isochrone response {response.content}')
 
 
+class IsochroneSubstraction(Configurable):
+    geom = Option(str, positional=True, default='geom')
+
+    @ContextProcessor
+    def last(self, context, *args, **kwargs):
+        yield ValueHolder(GEOSGeometry('POINT EMPTY'))
+
+    def __call__(self, last, identifier, properties, *args, **kwargs):
+        geom = properties[self.geom]
+
+        properties[self.geom] = geom.difference(last.get())
+        last.set(geom)
+
+        yield identifier, properties
+
+
 class UnionOnProperty(Configurable):
     geom = Option(str, positional=True, default='geom')
     property = Option(str, positional=True, required=True)
