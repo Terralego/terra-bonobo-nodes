@@ -334,3 +334,27 @@ class CleanOlderThan(Configurable):
 
     def __call__(self, context, identifier, properties, output_layer, *args, **kwargs):
         return NOT_MODIFIED
+
+
+class IntersectionGeom(Configurable):
+    layer = Option(str, required=True, positional=True)
+    geom = Option(str, positional=True, default='geom')
+    geom_dest = Option(str, positional=True, default='geom')
+
+    def __call__(self, identifier, record, *args, **kwargs):
+        layer = Layer.objects.get(name=self.layer)
+        try:
+            zone = layer.features.filter(
+                    geom__intersects=record[self.geom]
+                ).annotate(
+                    intersection=MakeValid(Intersection('geom', record[self.geom]))
+                ).aggregate(
+                    zone=Union('intersection')
+                )['zone']
+
+            record[self.geom_dest] = zone
+
+        except Exception as e:
+            logger.error(f'identifier {identifier} got error {e}')
+
+        yield identifier, record
