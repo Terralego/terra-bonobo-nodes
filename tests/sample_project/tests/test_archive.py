@@ -4,7 +4,7 @@ import unittest
 
 class Test_TestOsm_OverpassExtract(unittest.TestCase):
     def test_zipreader_empty_path(self):
-        zfile = "school_property.zip"
+        zfile = "../tests/sample_project/tests/School_Property.zip"
         zipreader = archive.ZipReader()
         with open(zfile, 'rb') as my_zip:
             zip_read = my_zip.read()
@@ -16,8 +16,8 @@ class Test_TestOsm_OverpassExtract(unittest.TestCase):
             self.assertIsInstance(row[1], bytes)
 
     def test_zipreader_field_paths(self):
-        zfile = "school_property.zip"
-        content_path = ["school_property.shp"]
+        zfile = "../tests/sample_project/tests/School_Property.zip"
+        content_path = ["School_Property.shp"]
         zipreader = archive.ZipReader(content_path)
         with open(zfile, 'rb') as my_zip:
             zip_read = my_zip.read()
