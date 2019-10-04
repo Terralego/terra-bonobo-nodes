@@ -13,7 +13,7 @@ from django.contrib.gis.db.models.functions import (Distance, Intersection,
 from django.contrib.gis.geos import GEOSGeometry
 from django.db import connection, transaction
 from requests.compat import urljoin
-from terracommon.terra.models import Feature, Layer, FeatureQuerySet
+from geostore.models import Feature, Layer, FeatureQuerySet
 
 logger = logging.getLogger(__name__)
 
