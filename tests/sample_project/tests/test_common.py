@@ -8,7 +8,7 @@ from django.contrib.gis.geos import GEOSGeometry
 from bonobo.util.testing import BufferingNodeExecutionContext
 from unittest import mock
 from django.test import override_settings
-from terracommon.terra.models import Feature, Layer
+from geostore.models import Feature, Layer
 
 
 class Test_TestCommon_CsvDictReader(unittest.TestCase):
@@ -495,7 +495,7 @@ class Test_TestCommon_IsochroneCalculation(unittest.TestCase):
                                                request))
             self.assertEqual(identifier, result[0])
             self.assertEqual(2, len(result))
-            
+
     @override_settings(GRAPHHOPPER="http://graphopper/", DEBUG=True)
     def test_isochronecalculation_non_valid(self):
         request = requests.Session()

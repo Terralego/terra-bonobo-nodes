@@ -1,6 +1,6 @@
 from terra_bonobo_nodes import db
 import unittest
-from terracommon.terra.models import Layer
+from geostore.models import Layer
 
 
 class Test_TestDB_KeyFloatTransform(unittest.TestCase):
