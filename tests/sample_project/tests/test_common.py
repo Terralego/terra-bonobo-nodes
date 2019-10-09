@@ -8,7 +8,7 @@ from django.contrib.gis.geos import GEOSGeometry
 from bonobo.util.testing import BufferingNodeExecutionContext
 from unittest import mock
 from django.test import override_settings
-from terracommon.terra.models import Feature, Layer
+from geostore.models import Feature, Layer
 
 
 class Test_TestCommon_CsvDictReader(unittest.TestCase):
