@@ -14,10 +14,10 @@ setuptools.setup(
     url="https://github.com/Terralego/terra-bonobo-nodes",
     install_requires=[
         "requests>=2.19,<2.20",
-        "django>=2.1,<2.19",
+        "django==2.2.5",
         "bonobo>=0.6.0,<0.6.9",
         "elasticsearch>=0.6.0,<7.0.0",
-        "psycopg2>=2.7.0,<2.7.9",
+        "psycopg2>=2.7",
         "pytest>=4.5.0,<4.5.9",
         "terra-common>0.3",
     ],
