@@ -96,7 +96,7 @@ class LoadInES(Configurable):
         return {
             '_index': self.index,
             '_type': '_doc',
-            '_id': f"{identifier}-{properties['layer']}",
+            '_id': identifier,
             '_source': {
                 '_feature_id': identifier,
                 **properties,
@@ -130,9 +130,9 @@ class ESGeometryField(Configurable):
     def __call__(self, es, *args, **kwargs):
         indice = client.IndicesClient(es)
         if not indice.exists(index=self.index):
-            indice.create(index='features')
+            indice.create(index=self.index)
             indice.put_mapping(
-                index='features',
+                index=self.index,
                 doc_type='_doc',
                 body={
                     'properties': {
@@ -145,7 +145,7 @@ class ESGeometryField(Configurable):
                 }
             )
             indice.put_settings(
-                index='features',
+                index=self.index,
                 body={
                     "index.mapping.total_fields.limit": self.total_fields
                 },
