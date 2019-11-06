@@ -19,7 +19,6 @@ setuptools.setup(
         "elasticsearch>=0.6.0,<7.0.0",
         "psycopg2>=2.7",
         "pytest>=4.5.0,<4.5.9",
-        "terra-common>0.3",
     ],
     dependency_links=[
         "git+https://github.com/jrmi/pyfiles.git@master#egg=pyfiles-0.1",
