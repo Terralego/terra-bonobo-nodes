@@ -1,5 +1,5 @@
 # terra common is used to get django requirement (specific version)
-terra-common>=0.2,<0.3
+django-geostore>=0.3,<0.4
 requests>=2.19,<2.20
 bonobo>=0.6.0,<0.6.9
 elasticsearch>=0.6.0,<7.0.0
