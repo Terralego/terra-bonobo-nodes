@@ -29,5 +29,10 @@ services:
     - ./tests:/app/tests
     - ./tox.ini:/app/tox.ini
     - ./.tox:/app/.tox
+    depends_on:
+      - db
+    ports:
+      - "8000:8000"
+    command: /app/venv/bin/python3 /app/tests/sample_project/manage.py runserver 0.0.0.0:8000
 volumes:
   data:

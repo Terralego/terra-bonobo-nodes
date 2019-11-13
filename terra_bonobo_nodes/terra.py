@@ -12,8 +12,8 @@ from django.contrib.gis.db.models.functions import (Distance, Intersection,
                                                     MakeValid, Transform)
 from django.contrib.gis.geos import GEOSGeometry
 from django.db import connection, transaction
+from geostore.models import Feature, Layer
 from requests.compat import urljoin
-from geostore.models import Feature, Layer, FeatureQuerySet
 
 logger = logging.getLogger(__name__)
 

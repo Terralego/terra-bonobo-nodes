@@ -9,6 +9,7 @@ RUN : \
 ADD install.sh \
     LICENSE \
     MANIFEST.in \
+    CHANGES.md \
     README.md \
     requirements.txt \
     setup.py \
