@@ -25,6 +25,7 @@ services:
     - ./requirements.txt:/app/requirements.txt
     - ./setup.py:/app/setup.py
     - ./terra_bonobo_nodes:/app/terra_bonobo_nodes
+    - ./tests/sample_project/:/app/sample_project/
     - ./test-requirements.txt:/app/test-requirements.txt
     - ./tests:/app/tests
     - ./tox.ini:/app/tox.ini

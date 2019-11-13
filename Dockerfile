@@ -17,6 +17,8 @@ ADD install.sh \
     tests \
     tox.ini \
     ./
-ADD terra_bonobo_nodes terra_bonobo_nodes/
+ADD tests/sample_project/ sample_project
+ADD terra_bonobo_nodes/ terra_bonobo_nodes
+
 ADD tests tests
 RUN ./install.sh

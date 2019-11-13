@@ -104,22 +104,20 @@ class Test_TestCommon_GeojsonReader(unittest.TestCase):
 
 class Test_TestCommon_IdentifierFromProperty(unittest.TestCase):
     def test_identifierfromproperty(self):
-        property_to_remove = "property_to_remove"
+        id_property = "id_prop"
 
         identifierproperty = common.IdentifierFromProperty(
-            property=property_to_remove)
+            property=id_property)
 
         record_original = {
             'test': 'identifierproperty',
-            'property_to_remove': 'property',
+            id_property: 'property',
             'other': 'try'}
-        value_expected = record_original.get(property_to_remove)
 
-        dict_res = [identifierproperty(record_original)]
+        identifier, record = identifierproperty(record_original)
 
-        self.assertNotIn(property_to_remove, dict_res[0][1])
-        self.assertEqual(value_expected, dict_res[0][0])
-        self.assertEqual(2, len(dict_res[0]))
+        self.assertIn(id_property, record)
+        self.assertEqual(identifier, record_original[id_property])
 
 
 class Test_TestCommon_GenerateIdentifier(unittest.TestCase):
@@ -333,18 +331,16 @@ class Test_TestCommon_AttributesToGeometry(unittest.TestCase):
             x=self.x, y=self.y,
             geom=self.geom, srid=self.srid)
 
-        record = {'Key_1': self.attribute_1, 'Key_2': self.attribute_2}
+        original_record = {'Key_1': self.attribute_1, 'Key_2': self.attribute_2}
 
-        result = next(attributestopointgeometry(self.identifier,
-                                                record))
+        identifier, record = attributestopointgeometry(self.identifier, original_record)
 
-        point_result = result[1].get(self.geom)
+        point_result = record.get(self.geom)
 
-        self.assertEqual(2, len(result))
         self.assertEqual("Point", point_result.geom_type)
-        self.assertEqual(self.identifier, result[0])
-        self.assertNotIn(self.attribute_1, record)
-        self.assertNotIn(self.attribute_2, record)
+        self.assertEqual(self.identifier, identifier)
+        self.assertEqual(float(self.attribute_1), point_result[0])
+        self.assertEqual(float(self.attribute_2), point_result[1])
 
     def test_attributestogeometry_error(self):
         attributestopointgeometry = common.AttributesToPointGeometry(
@@ -371,12 +367,11 @@ class Test_TestCommon_GeometryToJson(unittest.TestCase):
                                                simplify=simplify)
         properties = {source: example_geo}
 
-        result = next(geometrytojson(identifier, properties))
+        r_identifier, record = geometrytojson(identifier, properties)
 
-        self.assertEqual(identifier, result[0])
-        self.assertEqual(2, len(result))
-        self.assertEqual(result[1].get(destination).get("type"),
-                         result[1].get(source).geom_type)
+        self.assertEqual(identifier, r_identifier)
+        self.assertEqual(record.get(destination).get("type"),
+                         record.get(source).geom_type)
 
 
 class Test_TestCommon_GeometryToCentroid(unittest.TestCase):
@@ -389,13 +384,10 @@ class Test_TestCommon_GeometryToCentroid(unittest.TestCase):
 
         geometrytocentroid = common.GeometryToCentroid(
             geom=geom, geom_dest=geom_dest)
-        result = next(geometrytocentroid(identifier,
-                                         properties))
+        r_identifier, record = geometrytocentroid(identifier, properties)
 
-        self.assertEqual(identifier, result[0])
-        self.assertEqual(2, len(result))
-        self.assertEqual("Point",
-                         result[1].get(geom_dest).geom_type)
+        self.assertEqual(identifier, r_identifier)
+        self.assertEqual("Point", record.get(geom_dest).geom_type)
 
 
 class Test_TestCommon_Geometry3Dto2D(unittest.TestCase):

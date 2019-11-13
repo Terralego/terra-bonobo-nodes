@@ -10,12 +10,11 @@ import django
 
 class Test_TestTerra_LayerClusters(django.test.TestCase):
     def setUp(self):
-        print(terra.__file__)
         self.geometries = {
             "layer1": Point(4, 6), "layer2": Point(6, 4),
             "layer3": Point(2, 4),
             "layerpolygon": Polygon(((0.0, 0.0), (0.0, 1.0), (1.0, 1.0),
-                                     (1.0, 0.0), (0.0, 0.0)), srid=4366)
+                                     (1.0, 0.0), (0.0, 0.0)), srid=4326)
         }
         self.layers = []
         for layer_name, geom in self.geometries.items():
@@ -33,7 +32,7 @@ class Test_TestTerra_LayerClusters(django.test.TestCase):
             metric_projection_srid=metric_projection_srid,
             distance=distance)
         result = [row for row in layer_cluster()]
-        for row in result: 
+        for row in result:
             cluster_result, features_result = row
             self.assertIsInstance(cluster_result, str)
             self.assertIsInstance(features_result, terra.FeatureQuerySet)
@@ -217,7 +216,7 @@ class Test_TestTerra_LayerClusters(django.test.TestCase):
             id_result, properties_result = transittimeonetomany(identifier, properties, request)
 
             self.assertEqual(id_result, identifier)
-            for row in properties_result['times']: 
+            for row in properties_result['times']:
                 self.assertIsInstance(row, list)
 
     def test_transittimeonetoone_else(self):
@@ -273,7 +272,7 @@ class Test_TestTerra_LayerClusters(django.test.TestCase):
             time_limits=time_limits, property=property_)
         id_result, properties_result = accessibilityratiobytime(
             identifier=identifier, properties=properties)
-        
+
         self.assertEqual(id_result, identifier)
         self.assertIsInstance(properties_result, dict)
         self.assertNotIn('times', properties_result)
@@ -318,9 +317,7 @@ class Test_TestTerra_LayerClusters(django.test.TestCase):
         self.assertIn(geom_in, record_result)
 
     def test_transformgeom(self):
-        ct = '''GEOGCS["GCS_HD1909",DATUM["D_Hungarian_Datum_1909",
-        SPHEROID["Bessel_1841",6377397.155,299.1528128]],
-        PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]]'''
+        ct = 2154
         geom_in = "geom_in"
         geom_out = "geom_out"
         identifier = "identifier"
