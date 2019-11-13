@@ -20,6 +20,17 @@ logger = logging.getLogger(__name__)
 
 
 class CsvDictReader(Configurable):
+    """
+    Extract lines from a CSV file. The file must be a BytesIO compatible object.
+
+    Options:
+      All options from csv.DictReader class are available and passed as this to the
+      class creator.
+
+    Return:
+      dict(row)
+    """
+
     delimiter = Option(str, default=csv.excel.delimiter, required=False)
     quotechar = Option(str, default=csv.excel.quotechar, required=False)
     escapechar = Option(str, default=csv.excel.escapechar, required=False)
@@ -50,6 +61,18 @@ class CsvDictReader(Configurable):
 
 
 class GeojsonReader(Configurable):
+    """
+    Extract features and its properties from a GeoJSON string.
+    The input must be a valid geojson string.
+
+    Options:
+      `geom` set the dict key where the geometry will be inserted
+      `allowed_projection` defines list of accepted projections
+
+    Return:
+      dict(properties)
+    """
+
     DEFAULT_ACCEPTED_PROJECTIONS = [
         'urn:ogc:def:crs:OGC:1.3:CRS84',
         'EPSG:4326',
@@ -72,6 +95,16 @@ class GeojsonReader(Configurable):
 
 
 class IdentifierFromProperty(Configurable):
+    """
+    Pop a property to set it as the identifier of the item.
+
+    Options:
+      `property` key of the property
+
+    Return:
+      list(identifier, record)
+    """
+
     property = Option(str, required=True, positional=True)
 
     def __call__(self, record):
@@ -79,6 +112,17 @@ class IdentifierFromProperty(Configurable):
 
 
 class GenerateIdentifier(Configurable):
+    """
+    Generate an identifier through a lambda functions. This allow use a method that
+    generated an identifier. By defaults it returns an uuid4.
+
+    Options:
+      `generator` Lambda function that returns the generated identifier.
+
+    Return:
+      list(identifier, record)
+    """
+
     generator = Option(None, required=True, default=lambda: (lambda *args: uuid.uuid4()))
 
     def __call__(self, *args):
@@ -96,6 +140,16 @@ class GenerateIdentifier(Configurable):
 
 
 class ExcludeAttributes(Configurable):
+    """
+    Pop a list of attributes from the record.
+
+    Options:
+      `excluded` list of excluded properties
+
+    Return:
+      list(identifier, record)
+    """
+
     excluded = Option(list, required=True, positional=True)
 
     def __call__(self, identifier, record):
@@ -107,6 +161,16 @@ class ExcludeAttributes(Configurable):
 
 
 class FilterAttributes(Configurable):
+    """
+    Filter attributes from a record from a attributes whitelist.
+
+    Options:
+      `included` list of allowed properties
+
+    Return:
+      list(identifier, record)
+    """
+
     included = Option(list, required=True, positional=True)
 
     def __call__(self, identifier, record):
@@ -115,6 +179,16 @@ class FilterAttributes(Configurable):
 
 
 class FilterByProperties(Configurable):
+    """
+    Filter attribute from a function.
+
+    Options:
+      `keep_eval_function` function to execute
+
+    Return:
+      list(identifier, record)
+    """
+
     keep_eval_function = Option(None, required=True, positional=True)
 
     def __call__(self, identifier, record):
@@ -125,6 +199,17 @@ class FilterByProperties(Configurable):
 
 
 class CollectAndSum(Configurable):
+    """
+    Sum fields content from a features queryset.
+
+    Options:
+      `geom` the geometry field from features
+      `sum_fields` fields to Sum()
+
+    Return:
+      list(identifier, record)
+    """
+
     geom = Option(str, required=True, positional=True)
     sum_fields = Option(dict, default={}, positional=True)
 
@@ -141,6 +226,16 @@ class CollectAndSum(Configurable):
 
 
 class MapProperties(Configurable):
+    """
+    Run method on properties. Can be used to run a map() method.
+
+    Options:
+      `map_function` the function that will be executed on record
+
+    Return:
+      list(identifier, record)
+    """
+
     map_function = Option(None, required=True, positional=True)
 
     def __call__(self, identifier, record):
@@ -148,6 +243,18 @@ class MapProperties(Configurable):
 
 
 class AttributeToGeometry(Configurable):
+    """
+    Pop an an attribute and transform to a GEOSGeometry object, that can be
+    manipulated as a real geometry.
+
+    Options:
+      `attribute` Attribute containing the geometry
+      `geom` The destination geom field
+
+    Return:
+      list(identifier, record)
+    """
+
     attribute = Option(str, required=True)
     geom = Option(str, required=True)
 
@@ -165,6 +272,19 @@ class AttributeToGeometry(Configurable):
 
 
 class AttributesToPointGeometry(Configurable):
+    """
+    Pop x and y attributes from a record and created a Point() object.
+
+    Options:
+      `x` x attribute from record
+      `y` y attribute from record
+      `geom` destination attribute to the point geometry
+      `srid` coordinates projection
+
+    Return:
+      list(identifier, record)
+    """
+
     x = Option(str, required=True)
     y = Option(str, required=True)
     geom = Option(str, required=True)
@@ -178,29 +298,63 @@ class AttributesToPointGeometry(Configurable):
             record[self.geom] = Point(float(x), float(y), srid=self.srid)
         except (TypeError, ValueError) as e:
             raise ValueError(f'Fails to cast ("{x}", "{y}") to float') from e
-        yield identifier, record
+        return identifier, record
 
 
 class GeometryToJson(Configurable):
+    """
+    Transform a GEOSGeometry object from record to a json object which can be simplified.
+
+    Options:
+      `source` source record attribute.
+      `destination` destination attribute where the json will be set.
+      `simplify` simplification factor from 0.0 to 1.0.
+
+    Return:
+      list(identifier, record)
+    """
+
     source = Option(str, required=True, positional=True)
     destination = Option(str, required=True, positional=True)
     simplify = Option(float, required=True, positional=True, default=0.0)
 
     def __call__(self, identifier, properties, *args, **kwargs):
         properties[self.destination] = json.loads(properties[self.source].simplify(self.simplify).geojson)
-        yield identifier, properties
+        return identifier, properties
 
 
 class GeometryToCentroid(Configurable):
+    """
+    Get a geometry centroid an put it in a record attribute.
+
+    Options:
+      `geom` geom field where the original geometry is.
+      `geom_dest` destination attribute when the centroid will be placed.
+
+    Return:
+      list(identifier, record)
+    """
+
     geom = Option(str, required=True, positional=True)
     geom_dest = Option(str, required=True, positional=True)
 
     def __call__(self, identifier, properties, *args, **kwargs):
         properties[self.geom_dest] = properties[self.geom].centroid
-        yield identifier, properties
+        return identifier, properties
 
 
 class Geometry3Dto2D(Configurable):
+    """
+    Ensure a geometry is 2D.
+
+    Options:
+      `geom` geom field where the original geometry is.
+      `geom_dest` destination attribute when the 2D geometry will be placed.
+
+    Return:
+      list(identifier, record)
+    """
+
     geom = Option(str, required=True, positional=True)
     geom_dest = Option(str, required=True, positional=True)
 
@@ -214,16 +368,41 @@ class Geometry3Dto2D(Configurable):
 
 
 class CopyOnPipelineSplit(Configurable):
+    """
+    Deep copy identifier and record objects.
+
+    Return:
+      list(identifier, record)
+    """
+
     def __call__(self, identifier, properties):
         yield deepcopy(identifier), deepcopy(properties)
 
 
 class DropIdentifier(Configurable):
+    """
+    Drop identifier from returned elements. Then only one element is
+    in returned list.
+
+    Return:
+      record
+    """
+
     def __call__(self, identifier, properties):
         yield properties
 
 
 class DjangoLog(Configurable):
+    """
+    Logs the geometry through logging module.
+
+    Options:
+      `log_level` logging level
+
+    Return:
+      identifier, record
+    """
+
     log_level = Option(int, required=False, default=logging.INFO)
 
     def __call__(self, identifier, record):
@@ -234,6 +413,27 @@ class DjangoLog(Configurable):
 
 
 class IsochroneCalculation(Configurable):
+    """
+    Calculate the isochrone from a geometry.using graphhopper service.
+    The Graphhopper endpoint is taken from django's settings.GRAPHHOPER attribute.
+    Most of options attributes are from Graphhopper API, look at its API
+    documentation. https://docs.graphhopper.com/#operation/getIsochrone
+
+    Services:
+      `http` requests.Session's object
+
+    Options:
+      `geom` geometry from which isochrone must be calculated
+      `time_limit` Time limit
+      `distance_limit` Maximum distance
+      `buckets` Number of isochrone zones
+      `vehicle` Kind of used vahicle (car, bike, hike, …)
+      `reverse_flow` The orientation of the flow (from point to polygon, or polygon to point)
+
+    Return:
+      identifier, record
+    """
+
     geom = Option(str, positional=True, default='geom')
     time_limit = Option(int, positional=True, default=600)
     distance_limit = Option(int, positional=True, default=0)
@@ -289,6 +489,17 @@ class IsochroneSubstraction(Configurable):
 
 
 class UnionOnProperty(Configurable):
+    """
+    Make a Geometry union of all records
+
+    Options:
+      `geom` attribute where the final geometry will be set
+      `property` property where the geometry to union is
+
+    Return:
+      identifier, record
+    """
+
     geom = Option(str, positional=True, default='geom')
     property = Option(str, positional=True, required=True)
 

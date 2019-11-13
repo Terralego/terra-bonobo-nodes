@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 
 
 class OverpassExtract(Configurable):
+
     query = Option(str, required=True, positional=True)
     overpass_url = Option(str, required=False, positional=False, default=OVERPASS_URL)
 

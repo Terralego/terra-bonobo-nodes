@@ -10,6 +10,20 @@ logger = logging.getLogger(__name__)
 
 
 class ESExtract(Configurable):
+    """
+    Extract records from elasticsearch endpoint
+
+    Services:
+      `es` ElasticSearch-dsl object
+
+    Options:
+      `index_name` Index name where to make the query
+      `body` ElasticSearch query, default: match_all
+
+    Return:
+      identifier, record
+    """
+
     index_name = Option(str, required=False, positional=True)
     body = Option(dict, positional=True, default={"query": {"match_all": {}}})
 
@@ -36,6 +50,19 @@ class ESExtract(Configurable):
 
 
 class LoadInES(Configurable):
+    """
+    Load record in an ElasticSearch index
+
+    Options:
+      `index` index name where to push the records
+
+    Services:
+      `es` ElasticSearch-dsl object
+
+    Return:
+      identifier, record
+    """
+
     index = Option(str, required=True, positional=True)
     length = 1000
 
@@ -82,6 +109,22 @@ class LoadInES(Configurable):
 
 
 class ESGeometryField(Configurable):
+    """
+    Setup the geometry field in ElasticSearch index
+
+    Options:
+      `index` index name where to set the geom field
+      `geom_field` the geom field name to set
+      `total_fields` set the count of total fields, this is usefull in
+        case of a big ES index
+
+    Services:
+      `es` ElasticSearch-dsl object
+
+    Return:
+      NOT_MODIFIED
+    """
+
     index = Option(str, required=True, positional=True)
     geom_field = Option(str, required=True, positional=True)
     total_fields = Option(int, default=10000, positional=True)
@@ -116,6 +159,19 @@ class ESGeometryField(Configurable):
 
 
 class ESOptimizeIndexing(Configurable):
+    """
+    Pre-indexing action to speedup indexing
+
+    Options:
+      `index` index name where to apply optimizations
+
+    Services:
+      `es` ElasticSearch-dsl object
+
+    Return:
+      NOT_MODIFIED
+    """
+
     index = Option(str, required=True, positional=True)
 
     es = Service('es')
@@ -137,4 +193,4 @@ class ESOptimizeIndexing(Configurable):
             },
         )
 
-        yield NOT_MODIFIED
+        return NOT_MODIFIED

@@ -3,6 +3,9 @@ from django.db.models import FloatField
 
 
 class KeyFloatTransform(KeyTextTransform):
+    """ Cast query as float
+    """
+
     output_field = FloatField()
 
     def as_sql(self, *args, **kwargs):
