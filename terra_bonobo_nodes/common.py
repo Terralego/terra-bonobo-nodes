@@ -96,7 +96,7 @@ class GeojsonReader(Configurable):
 
 class IdentifierFromProperty(Configurable):
     """
-    Pop a property to set it as the identifier of the item.
+    Use a property's value to set it as the identifier of the item.
 
     Options:
       `property` key of the property
@@ -108,7 +108,7 @@ class IdentifierFromProperty(Configurable):
     property = Option(str, required=True, positional=True)
 
     def __call__(self, record):
-        return record.pop(self.property), record
+        return record[self.property], record
 
 
 class GenerateIdentifier(Configurable):
