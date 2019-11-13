@@ -1,10 +1,10 @@
 import logging
+
 from bonobo.config import Configurable, Option, Service
 from bonobo.config.processors import ContextProcessor
 from bonobo.constants import END, NOT_MODIFIED
 from bonobo.util.objects import ValueHolder
-from elasticsearch import client
-from elasticsearch import helpers
+from elasticsearch import client, helpers
 
 logger = logging.getLogger(__name__)
 
@@ -77,7 +77,7 @@ class LoadInES(Configurable):
             context.input._runlevel += 1
             context.input.put((END, END))
             context.input.put(END)
-            # context.input._runlevel += 2
+            # context.input._runlevel += 2  # noqa
             context.step()
 
     def __call__(self, buffer, identifier, properties, es, *args, **kwargs):

@@ -1,0 +1,8 @@
+---
+version: "3.7"
+services:
+  django:
+    volumes:
+    - tox:/app/.tox
+volumes:
+  tox:

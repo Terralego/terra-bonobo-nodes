@@ -1,6 +1,8 @@
 import asyncio
 import logging
+
 from bonobo.config import Configurable, Option, Service
+
 logger = logging.getLogger(__name__)
 
 
@@ -12,9 +14,9 @@ class PyfilesExtract(Configurable):
     pyfile_storage = Service('pyfile_storage')
     http = Service('http')
 
-    def __call__(self, pyfile_storage, http): 
+    def __call__(self, pyfile_storage, http):
         event_loop = asyncio.new_event_loop()
-        result = event_loop.run_until_complete(          
+        result = event_loop.run_until_complete(
             pyfile_storage.search(
                 namespace=self.namespace,
                 filename=self.filename,

@@ -1,6 +1,7 @@
 from terra_bonobo_nodes import shapefile
 import unittest
 import json
+import os
 from unittest import mock
 
 
@@ -28,7 +29,8 @@ class Test_TestShapefile_ZipShapefileToGeojson(unittest.TestCase):
 
     def test_zipshapefiletogeojson_valid(self):
         zipshapefiletogeojson = shapefile.ZipShapefileToGeojson()
-        zfile = "Bank_Reconfiguration_and_Basking_Features_Area.zip"
+        HERE = os.path.dirname(__file__)
+        zfile = os.path.join(HERE, "Bank_Reconfiguration_and_Basking_Features_Area.zip")
         with open(zfile, 'rb') as my_zip:
             zip_read = my_zip.read()
             result = json.loads(next(zipshapefiletogeojson(zip_read)))

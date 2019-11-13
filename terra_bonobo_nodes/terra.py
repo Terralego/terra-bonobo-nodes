@@ -12,8 +12,8 @@ from django.contrib.gis.db.models.functions import (Distance, Intersection,
                                                     MakeValid, Transform)
 from django.contrib.gis.geos import GEOSGeometry
 from django.db import connection, transaction
+from geostore.models import Feature, FeatureQuerySet, Layer  # noqa
 from requests.compat import urljoin
-from geostore.models import Feature, Layer, FeatureQuerySet
 
 logger = logging.getLogger(__name__)
 
@@ -87,7 +87,7 @@ class LoadFeatureInLayer(Configurable):
 
         if len(buffer):
             context.input._writable_runlevel = 1
-            context.input._runlevel = 1
+            context.input._runlevel += 1
             context.input.put((END, END))
             context.input.put(END)
             context.step()
@@ -287,7 +287,7 @@ class AccessibilityRatioByTime(Configurable):
         if not transit_times:
             return identifier, properties
         else:
-            # print("transit_times")
+            # print("transit_times")  # noqa
             n_points = len(transit_times)
 
             access = [False] * n_points
