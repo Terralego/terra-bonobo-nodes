@@ -8,7 +8,7 @@ CHANGES = open(os.path.join(HERE, 'CHANGES.md')).read()
 
 setuptools.setup(
     name="terra-bonobo-nodes",
-    version=open(os.path.join(HERE, 'django_geosource', 'VERSION.md')).read().strip(),
+    version=open(os.path.join(HERE, 'terra_bonobo_nodes', 'VERSION.md')).read().strip(),
     include_package_data=True,
     author="Makina Corpus",
     author_email="terralego-pypi@makina-corpus.com",
