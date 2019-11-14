@@ -9,6 +9,13 @@ logger = logging.getLogger(__name__)
 
 
 class ZipShapefileToGeojson(Configurable):
+    """
+    Transforms zipped shapefile to geojson format
+
+    Return:
+      str geojson data
+    """
+
     def __call__(self, content):
         tmp_zip = tempfile.NamedTemporaryFile(mode='wb', suffix='.zip', delete=False)
         tmp_zip.write(content)

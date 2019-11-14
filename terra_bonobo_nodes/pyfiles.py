@@ -7,6 +7,22 @@ logger = logging.getLogger(__name__)
 
 
 class PyfilesExtract(Configurable):
+    """
+    Extract files from using pyfile module
+
+    Options:
+      `namespace` Namespace in storage
+      `filename` Filename of the file
+      `version` version of the file
+
+    Services:
+      `pyfiles_storage` Pyfile object
+      `http` request.Session object
+
+    Return:
+      bytes file content
+    """
+
     namespace = Option(str, required=True, positional=True)
     filename = Option(str, required=True, positional=True)
     version = Option(str, required=False, positional=True, default='latest')

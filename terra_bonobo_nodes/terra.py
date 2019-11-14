@@ -21,6 +21,20 @@ GEOS_EMPTY_POINT = GEOSGeometry('POINT EMPTY')
 
 
 class LayerClusters(Configurable):
+    """
+    Extract cluster from layers
+
+
+    Options:
+      `input_layers` list of input layers
+      `metric_projection_srid` used projection
+      `distance` minimal distance between each cluster
+
+    Return:
+      Point cluster point object
+      QuerySet QuerySet of all features included in the cluster
+    """
+
     input_layers = Option(list, positional=True, required=True)
     metric_projection_srid = Option(int, positional=True, required=True)
     distance = Option(int, positional=True, required=True)
@@ -51,6 +65,19 @@ class LayerClusters(Configurable):
 
 
 class SubdivideGeom(Configurable):
+    """
+    Execute ST_Subdivide to an input geometry
+
+
+    Options:
+      `max_vertices` numbe maximal of vertices of the new geometry
+      `geom` geom field where is located the geometry
+
+    Return:
+      identifier identifier of the new record
+      record properties of the record
+    """
+
     max_vertices = Option(int, positional=True, default=256)
     geom = Option(str, positional=True, default='geom')
 
@@ -75,6 +102,21 @@ class SubdivideGeom(Configurable):
 
 
 class LoadFeatureInLayer(Configurable):
+    """
+    Load feature data in input layer
+
+    Options:
+      `geom` geom field where is located the geometry
+      `layer` layer where to insert the geometry and its attributes
+      `window_length` size of bulk import
+
+    Services:
+      `service_layer` Layer where to insert geometries, used if layer argument is empty
+
+    Return:
+      NOT_MODIFIED
+    """
+
     geom = Option(str, positional=True, default='geom')
     layer = Option(None, required=False, positional=True)
     window_length = Option(int, default=200)
@@ -122,6 +164,19 @@ class LoadFeatureInLayer(Configurable):
 
 
 class ExtractFeatures(Configurable):
+    """
+    Extract features from a queryset
+
+    Options:
+      `queryset` Feature QuerySet containing geometries and attributes
+      `id_field` field containing the identifier
+      `extra_properties` dict of extra attributes extracted from the feature
+
+    Return:
+      str identifier of the record using id_field
+      dict record
+    """
+
     queryset = Option(None, required=True, positional=True)
     id_field = Option(str, required=True, positional=True, default='identifier')
     extra_properties = Option(dict, required=True, positional=True, default={})
@@ -146,6 +201,19 @@ class ExtractFeatures(Configurable):
 
 
 class BooleanIntersect(Configurable):
+    """
+    Intersect geometry witch all geometries of one layer
+
+    Options:
+      `layer` Layer to intersect
+      `property` property where to put the resulted boolean
+      `geom` geometry attribute in record
+
+    Return:
+      str identifier of the record
+      dict record updated
+    """
+
     layer = Option(str, required=True, positional=True)
     property = Option(str, required=True, positional=True)
     geom = Option(str, positional=True, default='geom')
@@ -162,6 +230,19 @@ class BooleanIntersect(Configurable):
 
 
 class IntersectionPercentByArea(Configurable):
+    """
+    Get percentage of intersection of a geometry
+
+    Options:
+      `layer` Layer to intersect
+      `property` property where to put the resulted intersection
+      `geom` geometry attribute in record
+
+    Return:
+      str identifier of the record
+      dict record updated
+    """
+
     layer = Option(str, required=True, positional=True)
     property = Option(str, required=True, positional=True)
     geom = Option(str, positional=True, default='geom')
@@ -186,6 +267,22 @@ class IntersectionPercentByArea(Configurable):
 
 
 class ClosestFeatures(Configurable):
+    """
+    Get closes features of the geometry in a layer
+
+    Options:
+      `layer` Layer to intersect
+      `property_filter` dict of properties to filter in layer's features
+      `geom` geometry attribute in record
+      `closests` property where to put closest features
+      `limit` number of features maximum to load
+      `max_distance` maximal distance from original geometry
+
+    Return:
+      str identifier of the record
+      dict record updated
+    """
+
     layer = Option(str, positional=True, required=True)
     property_filter = Option(dict, default={})
     geom = Option(str, default='geom')
@@ -224,6 +321,26 @@ class ClosestFeatures(Configurable):
 
 
 class TransitTimeOneToMany(Configurable):
+    """
+    Calculate transit time from geometry to list of points.
+    Settings can be found in graphhopper API documentation.
+
+    Options:
+      `vehicules` vehicules to use (car, bike, hike, …)
+      `weighting` what kind of way (default: fastest)
+      `elevation` take care of terrain elevation
+      `geom` where is the original geometry
+      `points` destination points to calculate
+      `times_property` where to insert calculated times
+
+    Services:
+      `http` requests.Session's object
+
+    Return:
+      str identifier of the record
+      dict record updated
+    """
+
     vehicles = Option(list, positional=True, default=['car'])
     weighting = Option(str, positional=True, default='fastest')
     elevation = Option(bool, positional=True, default=False)
@@ -266,6 +383,10 @@ class TransitTimeOneToMany(Configurable):
 
 
 class TransitTimeOneToOne(TransitTimeOneToMany):
+    """
+    Same as TransitTimeOneToMany but for only one destination. Uses the same API.
+    """
+
     def __call__(self, *args, **kwargs):
         identifier, properties = super().__call__(*args, **kwargs)
         if properties[self.times_property]:
@@ -277,6 +398,19 @@ class TransitTimeOneToOne(TransitTimeOneToMany):
 
 
 class AccessibilityRatioByTime(Configurable):
+    """
+    Calculate accesibility using transit times
+
+    Options:
+      `time_limits` dict of time limits by type of vehicle
+      `property` property where to set in the record the resulted ratio
+      `times` where are the transit time stored in original record
+
+    Return:
+      str identifier of the record
+      dict record updated
+    """
+
     time_limits = Option(list, positional=True, required=True)
     property = Option(str, positional=True, required=True)
     times = Option(str, positional=True, default='times')
@@ -287,7 +421,6 @@ class AccessibilityRatioByTime(Configurable):
         if not transit_times:
             return identifier, properties
         else:
-            # print("transit_times")  # noqa
             n_points = len(transit_times)
 
             access = [False] * n_points
@@ -301,6 +434,22 @@ class AccessibilityRatioByTime(Configurable):
 
 
 class SimplifyGeom(Configurable):
+    """
+    Simplify a geometry
+
+
+    Options:
+      `tolerance` tolerance of simplification
+      `geom_in` property of input geometry
+      `geom_out` property of output geometry
+
+    Return:
+      str identifier of the record
+      dict record updated
+    """
+
+
+
     tolerance = Option(int, positional=True, required=True)
     geom_in = Option(str, positional=True, default='geom')
     geom_out = Option(str, positional=True, default='geom')
@@ -311,6 +460,19 @@ class SimplifyGeom(Configurable):
 
 
 class TransformGeom(Configurable):
+    """
+    Transform geometry
+
+    Options:
+      `ct` destination projection
+      `geom_in` property of input geometry
+      `geom_out` property of output geometry
+
+    Return:
+      str identifier of the record
+      dict record updated
+    """
+
     ct = Option(str, positional=True, required=True)
     geom_in = Option(str, positional=True, default='geom')
     geom_out = Option(str, positional=True, default='geom')
@@ -321,6 +483,17 @@ class TransformGeom(Configurable):
 
 
 class CleanOlderThan(Configurable):
+    """
+    Clean features of layer older than input date
+
+    Options:
+      `time` date threshold
+
+    Return:
+      str identifier of the record
+      dict record updated
+    """
+
     time = Option(None, required=True, positional=True)
 
     output_layer = Service('output_layer')
@@ -329,7 +502,6 @@ class CleanOlderThan(Configurable):
     def context(self, context, output_layer, *args, **kwargs):
         yield context
         layer = context.get_service('output_layer')
-        print("Count to be deleted: " + str(layer.features.filter(updated_at__lt=self.time).count()))
         layer.features.filter(updated_at__lt=self.time).delete()
 
     def __call__(self, context, identifier, properties, output_layer, *args, **kwargs):
@@ -337,6 +509,20 @@ class CleanOlderThan(Configurable):
 
 
 class IntersectionGeom(Configurable):
+    """
+    Cut original geometry with intersection of layers geometries
+
+    Options:
+      `layer` layer to intersect
+      `geom` property of input geometry
+      `geom_dest` property of output geometry
+
+    Return:
+      str identifier of the record
+      dict record updated
+    """
+
+
     layer = Option(str, required=True, positional=True)
     geom = Option(str, positional=True, default='geom')
     geom_dest = Option(str, positional=True, default='geom')

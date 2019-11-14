@@ -12,6 +12,19 @@ logger = logging.getLogger(__name__)
 
 
 class OverpassExtract(Configurable):
+    """
+    Extract records from an overpass query
+
+    Options:
+      `query` The query to execute in the overpass service
+      `overpass_url` Overpass endpoint,
+
+    Services:
+      `http` requests.Session object
+
+    Return:
+      str result of query
+    """
 
     query = Option(str, required=True, positional=True)
     overpass_url = Option(str, required=False, positional=False, default=OVERPASS_URL)
@@ -27,6 +40,16 @@ class OverpassExtract(Configurable):
 
 
 class OsmXMLtoGeojson(Configurable):
+    """
+    Transforms XML from OSM OverPass service to geojson format
+
+    Options:
+      `type_features` The type of geometries (points, lines, …)
+
+    Return:
+      str geojson data
+    """
+
     class Geometry(Enum):
         POINTS = 'points'
         LINES = 'lines'
@@ -67,9 +90,13 @@ class OsmXMLtoGeojson(Configurable):
 
 
 class Ogr2ogrGeojson2Geojson(Configurable):
+    """
+    Transform other_tags from ogr2ogr as standard properties
+
+      dict record
+    """
+
     def __call__(self, record):
-        # Transforme other_tags from ogr2ogr as standard properties
-        # "frequency"=>"0","gauge"=>"1435","layer"=>"1"
         try:
             other_tags_str = record.pop('other_tags')
             if other_tags_str:

@@ -5,6 +5,19 @@ from django.db import connections
 
 
 class SQLExtract(Configurable):
+    """
+    Extract records from an SQL query
+
+    Options:
+      `sql_query` SQL query to execute
+      `identifier` column containing record identifier
+      `db_alias` db alias used for connection
+
+    Return:
+      str record's identifier
+      dict record data
+    """
+
     sql_query = Option(str, required=True, positional=True)
     identifier = Option(str, required=True, positional=True)
     db_alias = Option(str, positional=True, default="default")
@@ -26,6 +39,20 @@ class SQLExtract(Configurable):
 
 
 class AttributeFromSQL(Configurable):
+    """
+    Spread a record attribute from an SQL query
+
+
+    Options:
+      `sql_query` SQL query to execute
+      `property` property where the data will be inserted
+      `db_alias` db alias used for connection
+
+    Return:
+      str record's identifier
+      dict record data updated
+    """
+
     sql_query = Option(str, required=True, positional=True)
     property = Option(str, required=True, positional=True)
     db_alias = Option(str, positional=True, default="default")
