@@ -7,7 +7,7 @@ class Test_TestSql_SQLExtract(unittest.TestCase):
         db_alias = "default"
         identifier = "a"
         sql_query = '''
-            SELECT 
+            SELECT
             123::numeric AS A,
             456::numeric AS B
         '''
@@ -16,7 +16,7 @@ class Test_TestSql_SQLExtract(unittest.TestCase):
                                     sql_query=sql_query)
         id_result, properties_result = next(sqlextract())
         self.assertIsInstance(properties_result, dict)
-        self.assertNotIn(identifier, properties_result)
+        self.assertIn(identifier, properties_result)
         self.assertNotIn(id_result, properties_result)
 
     def test_attributefromsql_valid(self):

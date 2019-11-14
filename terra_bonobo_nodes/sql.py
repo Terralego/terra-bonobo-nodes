@@ -20,7 +20,7 @@ class SQLExtract(Configurable):
                     if isinstance(v, Decimal):
                         v = float(str(v))
                     properties[k] = v
-                identifier = properties.pop(self.identifier)
+                identifier = properties[self.identifier]
 
                 yield identifier, properties
 

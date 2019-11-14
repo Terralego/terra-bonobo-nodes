@@ -1,3 +1,10 @@
+0.3.3      (2019-11-14)
+-----------------------
+
+### Improve
+
+* Do not pop identifier when extracting SQL data
+
 0.3.2      (2019-11-13)
 -----------------------
 
