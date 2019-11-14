@@ -448,8 +448,6 @@ class SimplifyGeom(Configurable):
       dict record updated
     """
 
-
-
     tolerance = Option(int, positional=True, required=True)
     geom_in = Option(str, positional=True, default='geom')
     geom_out = Option(str, positional=True, default='geom')
@@ -521,7 +519,6 @@ class IntersectionGeom(Configurable):
       str identifier of the record
       dict record updated
     """
-
 
     layer = Option(str, required=True, positional=True)
     geom = Option(str, positional=True, default='geom')
