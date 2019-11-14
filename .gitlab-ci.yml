@@ -41,7 +41,6 @@ publish_pypi:
   image: python:3.6
   stage: publish
   tags: [shared-ci-docker]
-  when: manual
   before_script:
     - echo =========== Deploying on pypi ===========
   only:
