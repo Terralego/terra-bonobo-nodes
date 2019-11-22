@@ -128,11 +128,14 @@ class LoadFeatureInLayer(Configurable):
         buffer = yield ValueHolder([])
 
         if len(buffer):
-            context.input._writable_runlevel = 1
-            context.input._runlevel += 1
-            context.input.put((END, END))
-            context.input.put(END)
+            from queue import Queue
+            self._increase_context_runlevel(context)
+            Queue.put(context.input, (END, END), True, None)
+            Queue.put(context.input, END, True, None)
             context.step()
+
+    def _increase_context_runlevel(self, context):
+        context.input._runlevel += 1
 
     def __call__(self, buffer, identifier, record, service_layer, *args, **kwargs):
         self.write_layer = self.layer if self.layer else service_layer
