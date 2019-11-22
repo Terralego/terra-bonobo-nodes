@@ -147,7 +147,10 @@ class LoadFeatureInLayer(Configurable):
 
         if len(buffer) >= self.window_length or is_final:
             with transaction.atomic(savepoint=False):
-                Feature.objects.filter(identifier__in=[i for i, r in buffer]).delete()
+                Feature.objects.filter(
+                    layer=self.write_layer,
+                    identifier__in=[i for i, r in buffer]
+                ).delete()
                 Feature.objects.bulk_create(
                     [self._get_feature_object(*feature) for feature in buffer]
                 )
