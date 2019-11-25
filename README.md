@@ -3,18 +3,20 @@
 This package provides a set of bonobo ETL's nodes to help developpers to
 integrate data in a terralego based app.
 
+## To start a dev instance
 
-## test with docker
+Define settings you wants in `tests/sample_project/projecttest/` django project.
 
-build
-```
-docker-compose build
+```sh
+docker-compose up
 ```
 
-launch pgsql
-```
-docker-compose up -d db
-docker-compose logs db  # verify everything is ok
+## Test
+
+To run test suite, just launch:
+
+```sh
+docker-compose run web /code/venv/bin/python3 /code/src/manage.py test
 ```
 
 Run every tests
@@ -24,7 +26,6 @@ docker-compose run --rm django bash
 ./venv/bin/tox -c tox.ini -e coverage
 ./venv/bin/tox -c tox.ini -e tests
 ```
-
 
 Note for osx users, use ``docker-compose``  this way
 ```
