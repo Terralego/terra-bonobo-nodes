@@ -90,7 +90,7 @@ class SubdivideGeom(Configurable):
         with connection.cursor() as cursor:
             sql_query = f'''
                 SELECT
-                    ST_Subdivide(ST_GeomFromText(%s), %s) AS geom
+                    ST_Subdivide(ST_Buffer(ST_GeomFromText(%s), 0), %s) AS geom
             '''
             cursor.execute(sql_query, args)
             id = 0
