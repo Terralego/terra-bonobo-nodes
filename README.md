@@ -16,15 +16,12 @@ docker-compose up
 To run test suite, just launch:
 
 ```sh
-docker-compose run web /code/venv/bin/python3 /code/src/manage.py test
+docker-compose run django /app/venv/bin/tox -e tests
 ```
 
-Run every tests
+Run linting
 ```
-docker-compose run --rm django bash
-./venv/bin/tox -c tox.ini -e linting
-./venv/bin/tox -c tox.ini -e coverage
-./venv/bin/tox -c tox.ini -e tests
+docker-compose run django /app/venv/bin/tox -e linting
 ```
 
 Note for osx users, use ``docker-compose``  this way
