@@ -3,6 +3,8 @@
 
 ### Fixes
 
+* Fix and improve runlevel manegement of nodes that
+  uses context and buffer
 * SubDivideGeom take only valid geometries
 
 0.3.8      (2019-11-26)

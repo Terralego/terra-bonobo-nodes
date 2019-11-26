@@ -69,16 +69,12 @@ class LoadInES(Configurable):
     es = Service('es')
 
     @ContextProcessor
-    def buffer(self, context, *args, **kwargs):
+    def buffer(self, context, *args, es, **kwargs):
         buffer = yield ValueHolder([])
 
         if len(buffer):
-            context.input._writable_runlevel += 1
-            context.input._runlevel += 1
-            context.input.put((END, END))
-            context.input.put(END)
-            # context.input._runlevel += 2  # noqa
-            context.step()
+            # Final call if there is content in buffer
+            self.__call__(buffer, END, END, es)
 
     def __call__(self, buffer, identifier, properties, es, *args, **kwargs):
         is_final = identifier == END and properties == END

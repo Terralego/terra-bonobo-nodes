@@ -124,18 +124,12 @@ class LoadFeatureInLayer(Configurable):
     service_layer = Service('output_layer')
 
     @ContextProcessor
-    def buffer(self, context, *args, **kwargs):
+    def buffer(self, context, *args, service_layer, **kwargs):
         buffer = yield ValueHolder([])
 
         if len(buffer):
-            self._increase_context_runlevel(context)
-            context.input.put((END, END))
-            context.input.put(END)
-            context.step()
-
-    def _increase_context_runlevel(self, context):
-        context.input._writable_runlevel = 1
-        context.input._runlevel += 1
+            # Final call if there is content in buffer
+            self.__call__(buffer, END, END, service_layer)
 
     def __call__(self, buffer, identifier, record, service_layer, *args, **kwargs):
         self.write_layer = self.layer if self.layer else service_layer
