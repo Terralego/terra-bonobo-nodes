@@ -130,9 +130,7 @@ class LoadFeatureInLayer(Configurable):
         if len(buffer):
             self._increase_context_runlevel(context)
             context.input.put((END, END))
-            self._increase_context_runlevel(context)
             context.input.put(END)
-            self._increase_context_runlevel(context)
             context.step()
 
     def _increase_context_runlevel(self, context):
