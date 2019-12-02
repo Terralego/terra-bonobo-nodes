@@ -149,7 +149,7 @@ class LoadFeatureInLayer(Configurable):
                     [self._get_feature_object(*feature) for feature in buffer]
                 )
             buffer.set([])
-            yield NOT_MODIFIED
+            return NOT_MODIFIED
 
     def _get_feature_object(self, identifier, record):
         properties = record.copy()
