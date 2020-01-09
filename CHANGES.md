@@ -1,3 +1,10 @@
+0.4.0      (2020-01-09)
+-----------------------
+
+### Improves
+
+* Index name from Option used instead of an hardcoded one
+
 0.3.9      (2019-11-26)
 -----------------------
 
