@@ -142,7 +142,8 @@ class ESGeometryField(Configurable):
                             'tree': 'quadtree',
                             }
                     },
-                }
+                },
+                include_type_name=True,
             )
             indice.put_settings(
                 index=self.index,
