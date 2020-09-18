@@ -43,7 +43,7 @@ class LayerClusters(Configurable):
         args = [
             self.metric_projection_srid,
             self.distance,
-            [l.pk for l in self.input_layers],
+            [input_layer.pk for input_layer in self.input_layers],
         ]
 
         with connection.cursor() as cursor:
