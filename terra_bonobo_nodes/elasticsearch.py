@@ -138,7 +138,7 @@ class ESGeometryField(Configurable):
                             'type': 'geo_shape',
                             'ignore_z_value': True,
                         },
-                        '_feature_id':{
+                        '_feature_id': {
                             "type": "keyword",
                         }
                     },
