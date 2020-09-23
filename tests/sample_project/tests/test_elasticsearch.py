@@ -15,9 +15,11 @@ class Test_ES_Extract(unittest.TestCase):
             es_found = {
                 "_scroll_id": "DXIF",
                 "hits": {
-                "total": 15,
-                "max_score": 1.0,
-                "hits": [
+                    "total": {
+                        "value": 15,
+                    },
+                    "max_score": 1.0,
+                    "hits": [
                         {
                             "_id": "1",
                             "_source": ...,
