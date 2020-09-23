@@ -38,7 +38,7 @@ class ESExtract(Configurable):
         )
 
         sid = page['_scroll_id']
-        scroll_size = page['hits']['total']
+        scroll_size = page['hits']['total']['value']
 
         while (scroll_size > 0):
             for hit in page['hits']['hits']:
@@ -95,7 +95,6 @@ class LoadInES(Configurable):
     def _get_formated_record(self, identifier, properties):
         return {
             '_index': self.index,
-            '_type': '_doc',
             '_id': identifier,
             '_source': {
                 '_feature_id': identifier,
@@ -133,22 +132,22 @@ class ESGeometryField(Configurable):
             indice.create(index=self.index)
             indice.put_mapping(
                 index=self.index,
-                doc_type='_doc',
                 body={
                     'properties': {
                         self.geom_field: {
                             'type': 'geo_shape',
                             'ignore_z_value': True,
-                            'tree': 'quadtree',
-                            }
+                        },
+                        '_feature_id':{
+                            "type": "keyword",
+                        }
                     },
                 },
-                include_type_name=True,
             )
             indice.put_settings(
                 index=self.index,
                 body={
-                    "index.mapping.total_fields.limit": self.total_fields
+                    'index.mapping.total_fields.limit': self.total_fields
                 },
             )
 
