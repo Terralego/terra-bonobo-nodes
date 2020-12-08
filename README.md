@@ -13,15 +13,16 @@ docker-compose up
 
 ## Test
 
-To run test suite, just launch:
+To run test suite, while stack up, just launch:
 
 ```sh
-docker-compose run django /app/venv/bin/tox -e tests
+docker-compose exec django /app/venv/bin/tox -e tests
 ```
 
-Run linting
+Run linting, while stack up:
+
 ```
-docker-compose run django /app/venv/bin/tox -e linting
+docker-compose exec django /app/venv/bin/tox -e linting
 ```
 
 Note for osx users, use ``docker-compose``  this way

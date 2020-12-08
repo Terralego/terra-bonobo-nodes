@@ -23,7 +23,7 @@ setuptools.setup(
     url="https://github.com/Terralego/terra-bonobo-nodes",
     install_requires=reqs,
     dependency_links=[
-        "git+https://github.com/jrmi/pyfiles.git@master#egg=pyfiles-0.1",
+        "git+https://github.com/jrmi/pyfiles.git@master#egg=pyfiles",
     ],
     tests_require=['asynctest'],
     packages=setuptools.find_packages(),
