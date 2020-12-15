@@ -206,6 +206,24 @@ class FilterByProperties(Configurable):
             yield identifier, record
 
 
+class MinArrayAttribute(Configurable):
+    """
+    Fetch the min value of the array.
+
+    Options:
+      `property_min` to get the min value
+
+    Return:
+      list(identifier, record)
+    """
+
+    property_min = Option(str, required=True, positional=True)
+
+    def __call__(self, identifier, record):
+        record[self.property_min] = min(record[self.property_min])
+        return identifier, record
+
+
 # Geometry
 
 
