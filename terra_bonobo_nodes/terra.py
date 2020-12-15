@@ -358,7 +358,8 @@ class TransitTimeOneToMany(Configurable):
     http = Service("http")
 
     def __call__(self, identifier, properties, http, *args, **kwargs):
-        start_point = properties[self.geom].centroid
+        end_point = properties[self.geom].centroid
+        # Starts from point to deals with oneway motorway
         points = properties.pop(self.points)
         dim = "time" if self.weighting == "fastest" else "distance"
 
@@ -368,10 +369,7 @@ class TransitTimeOneToMany(Configurable):
             for vehicle in self.vehicles:
                 routing_url = urljoin(settings.GRAPHHOPPER, "route")
                 payload = {
-                    "point": [
-                        f"{start_point.y},{start_point.x}",
-                        f"{point.y},{point.x}",
-                    ],
+                    "point": [f"{point.y},{point.x}", f"{end_point.y},{end_point.x}"],
                     "vehicle": vehicle,
                     "weighting": self.weighting,
                     "elevation": self.elevation,
