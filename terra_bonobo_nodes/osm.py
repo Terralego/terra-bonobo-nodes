@@ -6,7 +6,7 @@ from enum import Enum
 
 from bonobo.config import Configurable, Option, Service
 
-OVERPASS_URL = 'http://overpass-api.de/api/interpreter'
+OVERPASS_URL = "http://overpass-api.de/api/interpreter"
 
 logger = logging.getLogger(__name__)
 
@@ -29,14 +29,14 @@ class OverpassExtract(Configurable):
     query = Option(str, required=True, positional=True)
     overpass_url = Option(str, required=False, positional=False, default=OVERPASS_URL)
 
-    http = Service('http')
+    http = Service("http")
 
     def __call__(self, http):
         response = http.post(self.overpass_url, data=self.query)
         if not response.ok:
             logger.error(response.text)
-            raise RuntimeError('Overpass query fails')
-        yield response.content.decode('utf-8')
+            raise RuntimeError("Overpass query fails")
+        yield response.content.decode("utf-8")
 
 
 class OsmXMLtoGeojson(Configurable):
@@ -51,36 +51,43 @@ class OsmXMLtoGeojson(Configurable):
     """
 
     class Geometry(Enum):
-        POINTS = 'points'
-        LINES = 'lines'
-        MULTILINESTRINGs = 'multilinestrings'
-        MULTIPOLYGONS = 'multipolygons'
+        POINTS = "points"
+        LINES = "lines"
+        MULTILINESTRINGs = "multilinestrings"
+        MULTIPOLYGONS = "multipolygons"
 
     type_features = Option(Geometry, required=True, positional=True)
 
     def __call__(self, content):
-        tmp_osm = tempfile.NamedTemporaryFile(mode='wb', delete=False)
+        tmp_osm = tempfile.NamedTemporaryFile(mode="wb", delete=False)
         tmp_osm.write(content)
         tmp_osm.close()
         try:
             proc = subprocess.run(
                 args=[
-                    'ogr2ogr',
-                    '-f', 'GeoJSON', '/vsistdout/',
+                    "ogr2ogr",
+                    "-f",
+                    "GeoJSON",
+                    "/vsistdout/",
                     tmp_osm.name,
                     self.type_features.value,
-                    '--config', 'OSM_USE_CUSTOM_INDEXING', 'NO',
-                    '-lco', 'COLUMN_TYPES=all_tags',
+                    "--config",
+                    "OSM_USE_CUSTOM_INDEXING",
+                    "NO",
+                    "-lco",
+                    "COLUMN_TYPES=all_tags",
                 ],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
-                encoding='utf8'
+                encoding="utf8",
             )
             value = proc.stdout
             if proc.returncode != 0:
                 logger.info(value)
                 logger.error(proc.stderr)
-                raise RuntimeError("Command ogr2ogr failed with exit code {proc.returncode}")
+                raise RuntimeError(
+                    "Command ogr2ogr failed with exit code {proc.returncode}"
+                )
         except subprocess.CalledProcessError as e:
             raise RuntimeError("Command ogr2ogr failed") from e
         finally:
@@ -98,9 +105,11 @@ class Ogr2ogrGeojson2Geojson(Configurable):
 
     def __call__(self, record):
         try:
-            other_tags_str = record.pop('other_tags')
+            other_tags_str = record.pop("other_tags")
             if other_tags_str:
-                other_tags = dict([a.split('"=>"') for a in other_tags_str.strip('"').split('","')])
+                other_tags = dict(
+                    [a.split('"=>"') for a in other_tags_str.strip('"').split('","')]
+                )
                 record.update(other_tags)
         except ValueError as e:
             raise ValueError(f'Fails to parse "other_tags": {other_tags_str}') from e

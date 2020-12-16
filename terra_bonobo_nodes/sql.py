@@ -59,7 +59,12 @@ class AttributeFromSQL(Configurable):
 
     def __call__(self, identifier, record, *args, **kwargs):
         with connections[self.db_alias].cursor() as cursor:
-            cursor.execute(self.sql_query, [identifier, ])
+            cursor.execute(
+                self.sql_query,
+                [
+                    identifier,
+                ],
+            )
             columns = [col[0] for col in cursor.description]
 
             attr_data = []
