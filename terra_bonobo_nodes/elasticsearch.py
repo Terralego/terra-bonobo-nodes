@@ -27,26 +27,21 @@ class ESExtract(Configurable):
     index_name = Option(str, required=False, positional=True)
     body = Option(dict, positional=True, default={"query": {"match_all": {}}})
 
-    es = Service('es')
+    es = Service("es")
 
     def __call__(self, es):
-        page = es.search(
-            index=self.index_name,
-            body=self.body,
-            scroll='2m',
-            size=5000
-        )
+        page = es.search(index=self.index_name, body=self.body, scroll="2m", size=5000)
 
-        sid = page['_scroll_id']
-        scroll_size = page['hits']['total']['value']
+        sid = page["_scroll_id"]
+        scroll_size = page["hits"]["total"]["value"]
 
-        while (scroll_size > 0):
-            for hit in page['hits']['hits']:
-                yield hit['_id'], hit['_source']
+        while scroll_size > 0:
+            for hit in page["hits"]["hits"]:
+                yield hit["_id"], hit["_source"]
 
-            page = es.scroll(scroll_id=sid, scroll='2m')
-            sid = page['_scroll_id']
-            scroll_size = len(page['hits']['hits'])
+            page = es.scroll(scroll_id=sid, scroll="2m")
+            sid = page["_scroll_id"]
+            scroll_size = len(page["hits"]["hits"])
 
 
 class LoadInES(Configurable):
@@ -66,7 +61,7 @@ class LoadInES(Configurable):
     index = Option(str, required=True, positional=True)
     length = 1000
 
-    es = Service('es')
+    es = Service("es")
 
     @ContextProcessor
     def buffer(self, context, *args, es, **kwargs):
@@ -86,7 +81,7 @@ class LoadInES(Configurable):
             try:
                 helpers.bulk(es, buffer.get(), stats_only=True)
             except helpers.BulkIndexError as e:
-                logger.error(f'Indexing error: {e}')
+                logger.error(f"Indexing error: {e}")
 
             buffer.set([])
 
@@ -94,10 +89,10 @@ class LoadInES(Configurable):
 
     def _get_formated_record(self, identifier, properties):
         return {
-            '_index': self.index,
-            '_id': identifier,
-            '_source': {
-                '_feature_id': identifier,
+            "_index": self.index,
+            "_id": identifier,
+            "_source": {
+                "_feature_id": identifier,
                 **properties,
             },
         }
@@ -124,7 +119,7 @@ class ESGeometryField(Configurable):
     geom_field = Option(str, required=True, positional=True)
     total_fields = Option(int, default=10000, positional=True)
 
-    es = Service('es')
+    es = Service("es")
 
     def __call__(self, es, *args, **kwargs):
         indice = client.IndicesClient(es)
@@ -133,22 +128,20 @@ class ESGeometryField(Configurable):
             indice.put_mapping(
                 index=self.index,
                 body={
-                    'properties': {
+                    "properties": {
                         self.geom_field: {
-                            'type': 'geo_shape',
-                            'ignore_z_value': True,
+                            "type": "geo_shape",
+                            "ignore_z_value": True,
                         },
-                        '_feature_id': {
+                        "_feature_id": {
                             "type": "keyword",
-                        }
+                        },
                     },
                 },
             )
             indice.put_settings(
                 index=self.index,
-                body={
-                    'index.mapping.total_fields.limit': self.total_fields
-                },
+                body={"index.mapping.total_fields.limit": self.total_fields},
             )
 
         return NOT_MODIFIED
@@ -170,7 +163,7 @@ class ESOptimizeIndexing(Configurable):
 
     index = Option(str, required=True, positional=True)
 
-    es = Service('es')
+    es = Service("es")
 
     def __call__(self, es):
         es = client.IndicesClient(es)
@@ -179,7 +172,7 @@ class ESOptimizeIndexing(Configurable):
             index=self.index,
             body={
                 "index.refresh_interval": -1,
-            }
+            },
         )
         cluster.put_settings(
             body={

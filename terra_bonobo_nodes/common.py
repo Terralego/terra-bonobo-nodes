@@ -10,8 +10,7 @@ from bonobo.config.processors import ContextProcessor
 from bonobo.util.objects import ValueHolder
 from django.conf import settings
 from django.contrib.gis.db.models import Collect
-from django.contrib.gis.geos import (GEOSGeometry, LineString, Point,  # noqa
-                                     Polygon)
+from django.contrib.gis.geos import GEOSGeometry, LineString, Point, Polygon  # noqa
 from django.contrib.gis.geos.prototypes.io import wkt_w
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.db.models import Count, Sum
@@ -41,17 +40,17 @@ class CsvDictReader(Configurable):
     skipinitialspace = Option(str, default=csv.excel.skipinitialspace, required=False)
     lineterminator = Option(str, default=csv.excel.lineterminator, required=False)
     quoting = Option(int, default=csv.excel.quoting, required=False)
-    encoding = Option(str, default='utf-8', required=False)
+    encoding = Option(str, default="utf-8", required=False)
 
     def get_dialect_kwargs(self):
         return {
-            'delimiter': self.delimiter,
-            'quotechar': self.quotechar,
-            'escapechar': self.escapechar,
-            'doublequote': self.doublequote,
-            'skipinitialspace': self.skipinitialspace,
-            'lineterminator': self.lineterminator,
-            'quoting': self.quoting,
+            "delimiter": self.delimiter,
+            "quotechar": self.quotechar,
+            "escapechar": self.escapechar,
+            "doublequote": self.doublequote,
+            "skipinitialspace": self.skipinitialspace,
+            "lineterminator": self.lineterminator,
+            "quoting": self.quoting,
         }
 
     def __call__(self, content):
@@ -77,22 +76,27 @@ class GeojsonReader(Configurable):
     """
 
     DEFAULT_ACCEPTED_PROJECTIONS = [
-        'urn:ogc:def:crs:OGC:1.3:CRS84',
-        'EPSG:4326',
+        "urn:ogc:def:crs:OGC:1.3:CRS84",
+        "EPSG:4326",
     ]
     geom = Option(str, required=True, positional=True)
-    allowed_projection = Option(list, required=False, default=DEFAULT_ACCEPTED_PROJECTIONS)
+    allowed_projection = Option(
+        list, required=False, default=DEFAULT_ACCEPTED_PROJECTIONS
+    )
 
     def __call__(self, raw_geojson_str):
         geojson = json.loads(raw_geojson_str)
-        projection = geojson.get('crs', {}).get('properties', {}).get('name', None)
+        projection = geojson.get("crs", {}).get("properties", {}).get("name", None)
         if projection and projection not in self.allowed_projection:
-            raise ValueError(f'GeoJSON projection {projection} must be in {self.allowed_projection}')
+            raise ValueError(
+                f"GeoJSON projection {projection} must be in {self.allowed_projection}"
+            )
 
-        for feature in geojson.get('features', []):
-            properties = feature.get('properties', {})
-            properties[self.geom] = GEOSGeometry(json.dumps(feature.get('geometry')))
+        for feature in geojson.get("features", []):
+            properties = feature.get("properties", {})
+            properties[self.geom] = GEOSGeometry(json.dumps(feature.get("geometry")))
             yield properties
+
 
 # Identifier
 
@@ -126,18 +130,21 @@ class GenerateIdentifier(Configurable):
       list(identifier, record)
     """
 
-    generator = Option(None, required=True, default=lambda: (lambda *args: uuid.uuid4()))
+    generator = Option(
+        None, required=True, default=lambda: (lambda *args: uuid.uuid4())
+    )
 
     def __call__(self, *args):
         if not callable(self.generator):
-            raise ValueError(f'Generator {self.generator} must be a callable')
+            raise ValueError(f"Generator {self.generator} must be a callable")
         else:
             try:
                 self.generator(*args)
             except TypeError:
-                raise ValueError(f'Arguments not valid with {self.generator}')
+                raise ValueError(f"Arguments not valid with {self.generator}")
 
         return self.generator(*args), args[-1]
+
 
 # Attribute
 
@@ -198,6 +205,7 @@ class FilterByProperties(Configurable):
         if self.keep_eval_function(identifier, record):
             yield identifier, record
 
+
 # Geometry
 
 
@@ -220,9 +228,12 @@ class CollectAndSum(Configurable):
 
         aggregates = {
             self.geom: Collect(self.geom),
-            'ids': ArrayAgg('id', distinct=True),
-            'point_count': Count('id'),
-            **{k: Sum(KeyFloatTransform(field, 'properties')) for k, field in self.sum_fields.items()}
+            "ids": ArrayAgg("id", distinct=True),
+            "point_count": Count("id"),
+            **{
+                k: Sum(KeyFloatTransform(field, "properties"))
+                for k, field in self.sum_fields.items()
+            },
         }
 
         yield identifier, features.aggregate(**aggregates)
@@ -267,9 +278,9 @@ class AttributeToGeometry(Configurable):
 
     def get_geosgeometry(self, attribute):
         geom = GEOSGeometry(attribute)
-        if geom.geom_type in ['Polygon', 'MultiPolygon']:
+        if geom.geom_type in ["Polygon", "MultiPolygon"]:
             geom = geom.buffer(0)
-        elif geom.geom_type in ['LineString', 'MultiLineString']:
+        elif geom.geom_type in ["LineString", "MultiLineString"]:
             geom = geom.simplify(0)
         return geom
 
@@ -322,7 +333,9 @@ class GeometryToJson(Configurable):
     simplify = Option(float, required=True, positional=True, default=0.0)
 
     def __call__(self, identifier, properties, *args, **kwargs):
-        properties[self.destination] = json.loads(properties[self.source].simplify(self.simplify).geojson)
+        properties[self.destination] = json.loads(
+            properties[self.source].simplify(self.simplify).geojson
+        )
         return identifier, properties
 
 
@@ -367,6 +380,7 @@ class Geometry3Dto2D(Configurable):
         properties[self.geom_dest] = GEOSGeometry(wkt, srid=geom.srid)
         yield identifier, properties
 
+
 # Helpers
 
 
@@ -409,8 +423,8 @@ class DjangoLog(Configurable):
     log_level = Option(int, required=False, default=logging.INFO)
 
     def __call__(self, identifier, record):
-        logger.log(self.log_level, f'{identifier}: {record}')
-        if record.get('geom'):
+        logger.log(self.log_level, f"{identifier}: {record}")
+        if record.get("geom"):
             logger.log(self.log_level, f'{record["geom"].ewkt}')
         return identifier, record
 
@@ -437,50 +451,50 @@ class IsochroneCalculation(Configurable):
       identifier, record
     """
 
-    geom = Option(str, positional=True, default='geom')
+    geom = Option(str, positional=True, default="geom")
     time_limit = Option(int, positional=True, default=600)
     distance_limit = Option(int, positional=True, default=0)
     buckets = Option(int, positional=True, default=3)
-    vehicle = Option(str, positional=True, default='car')
+    vehicle = Option(str, positional=True, default="car")
     reverse_flow = Option(bool, positional=True, default=False)
 
-    http = Service('http')
+    http = Service("http")
 
     def __call__(self, identifier, properties, http, *args, **kwargs):
         point = properties[self.geom]
 
         payload = {
-            'time_limit': self.time_limit,
-            'distance_limit': self.distance_limit,
-            'buckets': self.buckets,
-            'vehicle': self.vehicle,
-            'reverse_flow': self.reverse_flow,
-            'point': f'{point.y},{point.x}',
+            "time_limit": self.time_limit,
+            "distance_limit": self.distance_limit,
+            "buckets": self.buckets,
+            "vehicle": self.vehicle,
+            "reverse_flow": self.reverse_flow,
+            "point": f"{point.y},{point.x}",
         }
 
-        isochrone_url = urljoin(settings.GRAPHHOPPER, 'isochrone')
+        isochrone_url = urljoin(settings.GRAPHHOPPER, "isochrone")
         response = http.get(isochrone_url, params=payload)
 
         try:
             response = response.json()
-            for isochrone in response.get('polygons', []):
+            for isochrone in response.get("polygons", []):
                 properties = {
-                    self.geom: GEOSGeometry(json.dumps(isochrone.get('geometry'))),
-                    **isochrone.get('properties', {})
+                    self.geom: GEOSGeometry(json.dumps(isochrone.get("geometry"))),
+                    **isochrone.get("properties", {}),
                 }
 
                 yield identifier, properties
 
         except json.JSONDecodeError:
-            logger.error(f'Error decoding isochrone response {response.content}')
+            logger.error(f"Error decoding isochrone response {response.content}")
 
 
 class IsochroneSubstraction(Configurable):
-    geom = Option(str, positional=True, default='geom')
+    geom = Option(str, positional=True, default="geom")
 
     @ContextProcessor
     def last(self, context, *args, **kwargs):
-        yield ValueHolder(GEOSGeometry('POINT EMPTY'))
+        yield ValueHolder(GEOSGeometry("POINT EMPTY"))
 
     def __call__(self, last, identifier, properties, *args, **kwargs):
         geom = properties[self.geom]
@@ -503,7 +517,7 @@ class UnionOnProperty(Configurable):
       identifier, record
     """
 
-    geom = Option(str, positional=True, default='geom')
+    geom = Option(str, positional=True, default="geom")
     property = Option(str, positional=True, required=True)
 
     @ContextProcessor
@@ -511,20 +525,13 @@ class UnionOnProperty(Configurable):
         buffer = yield ValueHolder({})
 
         for level, geometry in buffer.get().items():
-            context.send(
-                level,
-                {
-                    'level': level,
-                    self.geom: geometry
-                }
-            )
+            context.send(level, {"level": level, self.geom: geometry})
 
     def __call__(self, buffer, identifier, properties, *args, **kwargs):
 
         key = properties.get(self.property)
         unions = buffer.get()
         unions.get(key)
-        unions[key] = (
-            unions.get(key, GEOSGeometry('POINT EMPTY'))
-            | properties.get(self.geom, GEOSGeometry('POINT EMPTY'))
+        unions[key] = unions.get(key, GEOSGeometry("POINT EMPTY")) | properties.get(
+            self.geom, GEOSGeometry("POINT EMPTY")
         )

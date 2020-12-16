@@ -25,28 +25,28 @@ class PyfilesExtract(Configurable):
 
     namespace = Option(str, required=True, positional=True)
     filename = Option(str, required=True, positional=True)
-    version = Option(str, required=False, positional=True, default='latest')
+    version = Option(str, required=False, positional=True, default="latest")
 
-    pyfile_storage = Service('pyfile_storage')
-    http = Service('http')
+    pyfile_storage = Service("pyfile_storage")
+    http = Service("http")
 
     def __call__(self, pyfile_storage, http):
         event_loop = asyncio.new_event_loop()
         result = event_loop.run_until_complete(
             pyfile_storage.search(
-                namespace=self.namespace,
-                filename=self.filename,
-                version=self.version
+                namespace=self.namespace, filename=self.filename, version=self.version
             )
         )
 
-        if result is None or 'url' not in result:
-            raise RuntimeError(f'Fails extract from pyfiles {self.namespace} {self.filename} {self.version}')
+        if result is None or "url" not in result:
+            raise RuntimeError(
+                f"Fails extract from pyfiles {self.namespace} {self.filename} {self.version}"
+            )
 
-        url = result['url']
+        url = result["url"]
         response = http.get(url)
         if not response.ok:
             logger.error(response.text)
-            raise RuntimeError(f'Request fails: {url}')
+            raise RuntimeError(f"Request fails: {url}")
 
         return response.content
