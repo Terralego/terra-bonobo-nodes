@@ -1,2 +1,2 @@
-recursive-include terracommon/accounts/templates/registration/ *
 include LICENSE *txt *.md
+include terra_bonobo_nodes/VERSION.md
