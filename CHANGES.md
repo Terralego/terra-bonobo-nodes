@@ -1,4 +1,10 @@
 
+0.5.3 / 2020-12-16
+==================
+
+  * Add node to get the min value of an array
+  * Reverse TransitTimeOneToMany for deals with oneway on motorway
+
 0.5.2 / 2020-12-08
 ==================
 
