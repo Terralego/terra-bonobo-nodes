@@ -1,0 +1,11 @@
+[run]
+source = terra_bonobo_nodes
+
+
+[report]
+omit =
+    tests/*
+    test_terra_bonobo_nodes/*
+
+skip_covered = True
+show_missing = True

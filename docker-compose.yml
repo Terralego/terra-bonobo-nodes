@@ -24,16 +24,18 @@ services:
     - ./README.md:/app/README.md
     - ./requirements.txt:/app/requirements.txt
     - ./setup.py:/app/setup.py
+    - ./manage.py:/app/manage.py
     - ./terra_bonobo_nodes:/app/terra_bonobo_nodes
-    - ./tests/sample_project/:/app/sample_project/
+    - ./test_terra_bonobo_nodes:/app/test_terra_bonobo_nodes
     - ./test-requirements.txt:/app/test-requirements.txt
     - ./tests:/app/tests
     - ./tox.ini:/app/tox.ini
     - ./.tox:/app/.tox
+    - ./.coveragerc:/app/.coveragerc
     depends_on:
       - db
     ports:
-      - "8000:8000"
-    command: /app/venv/bin/python3 /app/tests/sample_project/manage.py runserver 0.0.0.0:8000
+      - "8030:8000"
+    command: /app/venv/bin/python3 /app/manage.py runserver 0.0.0.0:8000
 volumes:
   data:
