@@ -38,7 +38,7 @@ setuptools.setup(
         "elasticsearch>=7.0.0,<8.0.0",
         "psycopg2",
         "pytest",
-        "pyfiles @ git+https://github.com/jrmi/pyfiles.git@master",
+        "bygfiles",
     ],
     tests_require=tests_require,
     extras_require={"dev": tests_require},
