@@ -59,7 +59,7 @@ class Test_TestTerra_LayerClusters(django.test.TestCase):
         id_ = "identifier"
         record = {"a": "b", "c": "d"}
         with BufferingNodeExecutionContext(
-            terra.LoadFeatureInLayer(), services={"output_layer": self.layers[0]}
+            terra.LoadFeatureInLayer(layer_name=self.layers[0].name)
         ) as context:
             context.write_sync((id_, record))
 
@@ -74,8 +74,7 @@ class Test_TestTerra_LayerClusters(django.test.TestCase):
         print(self.geometries)
         record = {"a": "b", "c": "d", "geom": self.geometries["layer1"]}
         with BufferingNodeExecutionContext(
-            terra.LoadFeatureInLayer(window_length=1),
-            services={"output_layer": self.layers[0]},
+            terra.LoadFeatureInLayer(window_length=1, layer_name=self.layers[0].name)
         ) as context:
             context.write_sync((id_, record))
 
@@ -358,7 +357,7 @@ class Test_TestTerra_LayerClusters(django.test.TestCase):
         identifier = "identifier"
         properties = {"exemple_key": "exemple_value"}
         with BufferingNodeExecutionContext(
-            terra.CleanOlderThan(time=time), services={"output_layer": self.layers[0]}
+            terra.CleanOlderThan(time=time, layer_name=self.layers[0].name)
         ) as context:
             context.write_sync((identifier, properties))
         result = context.get_buffer()

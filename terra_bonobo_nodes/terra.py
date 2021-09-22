@@ -122,20 +122,24 @@ class LoadFeatureInLayer(Configurable):
 
     geom = Option(str, positional=True, default="geom")
     layer = Option(None, required=False, positional=True)
-    window_length = Option(int, default=200)
-
-    service_layer = Service("output_layer")
+    window_length = Option(int, default=100)
+    layer_name = Option(str, required=False)
 
     @ContextProcessor
-    def buffer(self, context, *args, service_layer, **kwargs):
+    def buffer(self, context, *args, **kwargs):
         buffer = yield ValueHolder([])
 
         if len(buffer):
             # Final call if there is content in buffer
-            self.__call__(buffer, END, END, service_layer)
+            self.__call__(buffer, END, END)
 
-    def __call__(self, buffer, identifier, record, service_layer, *args, **kwargs):
-        self.write_layer = self.layer if self.layer else service_layer
+    def __call__(self, buffer, identifier, record, *args, **kwargs):
+        if self.layer_name:
+            self.write_layer = Layer.objects.get(name=self.layer_name)
+        elif self.layer:
+            self.write_layer = self.layer
+        else:
+            raise Exception("Missing layer or layer_name parameter")
 
         is_final = identifier == END and record == END
 
@@ -503,16 +507,14 @@ class CleanOlderThan(Configurable):
     """
 
     time = Option(None, required=True, positional=True)
-
-    output_layer = Service("output_layer")
+    layer_name = Option(str, required=True)
 
     @ContextProcessor
-    def context(self, context, output_layer, *args, **kwargs):
+    def context(self, context, *args, **kwargs):
         yield context
-        layer = context.get_service("output_layer")
-        layer.features.filter(updated_at__lt=self.time).delete()
+        Feature.objects.filter(layer__name=self.layer_name).filter(updated_at__lt=self.time).delete()
 
-    def __call__(self, context, identifier, properties, output_layer, *args, **kwargs):
+    def __call__(self, context, identifier, properties, *args, **kwargs):
         return NOT_MODIFIED
 
 
