@@ -512,7 +512,9 @@ class CleanOlderThan(Configurable):
     @ContextProcessor
     def context(self, context, *args, **kwargs):
         yield context
-        Feature.objects.filter(layer__name=self.layer_name).filter(updated_at__lt=self.time).delete()
+        Feature.objects.filter(layer__name=self.layer_name).filter(
+            updated_at__lt=self.time
+        ).delete()
 
     def __call__(self, context, identifier, properties, *args, **kwargs):
         return NOT_MODIFIED
