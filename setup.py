@@ -37,7 +37,6 @@ setuptools.setup(
         "bonobo<0.6.9",
         "elasticsearch>=7.0.0,<8.0.0",
         "psycopg2",
-        "pytest",
         "bygfiles",
     ],
     tests_require=tests_require,
