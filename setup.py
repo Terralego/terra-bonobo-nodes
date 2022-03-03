@@ -18,6 +18,7 @@ tests_require = [
     "tblib",
     "eradicate",
     "asynctest",
+    "pytest",
 ]
 
 setuptools.setup(
