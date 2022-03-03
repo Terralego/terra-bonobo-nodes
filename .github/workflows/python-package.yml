@@ -45,10 +45,22 @@ jobs:
         experimental: [false]
         include:
           - django-version: '3.2.*'
+            python-version: '3.6'
+            experimental: true
+          - django-version: '3.2.*'
             python-version: '3.7'
+            experimental: true
+          - django-version: '3.2.*'
+            python-version: '3.8'
+            experimental: true
+          - django-version: '3.2.*'
+            python-version: '3.9'
             experimental: true
           - django-version: '4.0.*'
             python-version: '3.8'
+            experimental: true
+          - django-version: '4.0.*'
+            python-version: '3.9'
             experimental: true
     services:
       postgres:
