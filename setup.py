@@ -18,6 +18,7 @@ tests_require = [
     "tblib",
     "eradicate",
     "asynctest",
+    "pytest",
 ]
 
 setuptools.setup(
@@ -31,13 +32,12 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/Terralego/terra-bonobo-nodes",
     install_requires=[
-        "Django>=2.2,<3.0",
+        "Django>=2.2",
         "django-geostore",
         "requests",
         "bonobo<0.6.9",
         "elasticsearch>=7.0.0,<8.0.0",
         "psycopg2",
-        "pytest",
         "bygfiles",
     ],
     tests_require=tests_require,
