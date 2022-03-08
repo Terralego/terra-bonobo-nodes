@@ -7,7 +7,6 @@ on:
   push:
     branches: [ master ]
   pull_request:
-    branches: [ master ]
 
 jobs:
   lint:
@@ -42,7 +41,6 @@ jobs:
 
   build:
     runs-on: ubuntu-18.04
-    needs: [lint]
     continue-on-error: ${{ matrix.experimental }}
     strategy:
       matrix:

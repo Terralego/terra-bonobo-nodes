@@ -4,6 +4,7 @@ import json
 import logging
 import uuid
 from copy import deepcopy
+from urllib.parse import urljoin
 
 from bonobo.config import Configurable, Option, Service
 from bonobo.config.processors import ContextProcessor
@@ -13,10 +14,14 @@ from django.contrib.gis.db.models import Collect
 from django.contrib.gis.geos import GEOSGeometry, LineString, Point, Polygon  # noqa
 from django.contrib.gis.geos.prototypes.io import wkt_w
 from django.contrib.postgres.aggregates import ArrayAgg
-from django.db.models import Count, Sum
-from requests.compat import urljoin
+from django.db.models import Count, FloatField, Sum
 
-from .db import KeyFloatTransform
+try:
+    from django.db.models.fields.json import KeyTextTransform
+except ImportError:
+    from django.contrib.postgres.fields.jsonb import KeyTextTransform
+
+from django.db.models.functions import Cast
 
 logger = logging.getLogger(__name__)
 
@@ -249,7 +254,11 @@ class CollectAndSum(Configurable):
             "ids": ArrayAgg("id", distinct=True),
             "point_count": Count("id"),
             **{
-                k: Sum(KeyFloatTransform(field, "properties"))
+                k: Sum(
+                    Cast(
+                        KeyTextTransform(field, "properties"), output_field=FloatField()
+                    )
+                )
                 for k, field in self.sum_fields.items()
             },
         }
