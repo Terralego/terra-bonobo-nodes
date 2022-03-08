@@ -32,7 +32,7 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/Terralego/terra-bonobo-nodes",
     install_requires=[
-        "Django>=2.2",
+        "django",
         "django-geostore",
         "requests",
         "bonobo<0.6.9",
