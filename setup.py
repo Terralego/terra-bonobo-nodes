@@ -35,7 +35,7 @@ setuptools.setup(
         "django",
         "django-geostore",
         "requests",
-        "bonobo<0.6.9",
+        "bonobo",
         "elasticsearch>=7.0.0,<8.0.0",
         "psycopg2",
         "bygfiles",
