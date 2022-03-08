@@ -29,15 +29,15 @@ jobs:
 
     - name: Flake8 check
       run: |
-        flake8 terra_bonobo_nodes/ test_terra_bonobo_nodes/ tests/
+        flake8 terra_bonobo_nodes/ test_terra_bonobo_nodes/
 
     - name: Black check
       run: |
-        black --check terra_bonobo_nodes test_terra_bonobo_nodes tests/
+        black --check terra_bonobo_nodes test_terra_bonobo_nodes
 
     - name: Isort check
       run: |
-        isort -c --profile=black terra_bonobo_nodes/ test_terra_bonobo_nodes/ tests/
+        isort -c --profile=black terra_bonobo_nodes/ test_terra_bonobo_nodes/
 
   build:
     runs-on: ubuntu-18.04
