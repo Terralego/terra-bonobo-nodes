@@ -1,3 +1,5 @@
+[![codecov](https://codecov.io/gh/Terralego/terra-bonobo-nodes/branch/master/graph/badge.svg?token=GahfQWK6Qz)](https://codecov.io/gh/Terralego/terra-bonobo-nodes)
+
 # terra-bonobo-nodes
 
 This package provides a set of bonobo ETL's nodes to help developpers to
