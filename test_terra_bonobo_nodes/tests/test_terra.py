@@ -1,11 +1,13 @@
-from terra_bonobo_nodes import terra
-from django.contrib.gis.geos import Point, Polygon
-from bonobo.util.testing import BufferingNodeExecutionContext
-from unittest import mock
-import requests
 from json import JSONDecodeError
-from django.utils import timezone
+from unittest import mock
+
 import django
+import requests
+from bonobo.util.testing import BufferingNodeExecutionContext
+from django.contrib.gis.geos import Point, Polygon
+from django.utils import timezone
+
+from terra_bonobo_nodes import terra
 
 
 class Test_TestTerra_LayerClusters(django.test.TestCase):
