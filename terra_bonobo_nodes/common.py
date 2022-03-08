@@ -15,7 +15,12 @@ from django.contrib.gis.geos import GEOSGeometry, LineString, Point, Polygon  # 
 from django.contrib.gis.geos.prototypes.io import wkt_w
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.db.models import Count, FloatField, Sum
-from django.db.models.fields.json import KeyTextTransform
+
+try:
+    from django.db.models.fields.json import KeyTextTransform
+except ImportError:
+    from django.contrib.postgres.fields.jsonb import KeyTextTransform
+
 from django.db.models.functions import Cast
 
 logger = logging.getLogger(__name__)
