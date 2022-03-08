@@ -14,6 +14,7 @@ from django.contrib.gis.db.models.functions import (
     MakeValid,
     Transform,
 )
+from django.core.serializers.json import json, DjangoJSONEncoder
 from django.contrib.gis.geos import GEOSGeometry
 from django.db import connection, transaction
 from geostore.models import Feature, FeatureQuerySet, Layer  # noqa
@@ -163,7 +164,7 @@ class LoadFeatureInLayer(Configurable):
             return NOT_MODIFIED
 
     def _get_feature_object(self, identifier, record):
-        properties = record.copy()
+        properties = json.dumps(record.copy(), cls=DjangoJSONEncoder)
         geometry = properties.pop(self.geom, GEOS_EMPTY_POINT)
 
         return Feature(
