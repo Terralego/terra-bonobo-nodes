@@ -1,8 +1,10 @@
-from terra_bonobo_nodes import osm
-import unittest
 import json
-import requests
+import unittest
 from unittest import mock
+
+import requests
+
+from terra_bonobo_nodes import osm
 
 
 class Test_TestOsm_OverpassExtract(unittest.TestCase):
@@ -10,35 +12,35 @@ class Test_TestOsm_OverpassExtract(unittest.TestCase):
         query = "query"
         request = requests.Session()
         overpassextract = osm.OverpassExtract(query=query)
-        with mock.patch.object(request, 'post',
-                               return_value=mock.Mock(ok=False)):
+        with mock.patch.object(request, "post", return_value=mock.Mock(ok=False)):
             with self.assertLogs(), self.assertRaises(RuntimeError):
                 next(overpassextract(request))
 
     def test_osm_overpassextract_valid(self):
         query = "query"
         request = requests.Session()
-        with mock.patch.object(request, 'post',
-                               return_value=mock.Mock(ok=True)) as mock_post:
+        with mock.patch.object(
+            request, "post", return_value=mock.Mock(ok=True)
+        ) as mock_post:
 
             overpassextract = osm.OverpassExtract(query=query)
-            content = "test_decode".encode('utf-8')
+            content = "test_decode".encode("utf-8")
 
-            mock_post.return_value = mock.Mock(
-                content=content)
+            mock_post.return_value = mock.Mock(content=content)
             result = next(overpassextract(request))
-            self.assertEqual(result, content.decode('utf-8'))
+            self.assertEqual(result, content.decode("utf-8"))
 
 
 class Test_TestOsm_OsmXMLtoGeojson(unittest.TestCase):
     def test_osmxmltogeojson_not_valid_returncode(self):
-        with mock.patch.object(osm.subprocess, 'run',
-                               return_value=mock.Mock(ok=True)) as mock_returncode:
+        with mock.patch.object(
+            osm.subprocess, "run", return_value=mock.Mock(ok=True)
+        ) as mock_returncode:
             mock_returncode.return_value.poll.return_value = 1
-            string = '''<?xml version="1.0" encoding="UTF-8"?>
+            string = """<?xml version="1.0" encoding="UTF-8"?>
             <osm version="0.6" generator="CGImap 0.0.2">
-            </osm> '''
-            content = bytes(string, 'utf-8')
+            </osm> """
+            content = bytes(string, "utf-8")
             osmxmltogeojson = osm.OsmXMLtoGeojson("points")
             with self.assertRaises(RuntimeError), self.assertLogs():
                 next(osmxmltogeojson(content))
@@ -46,12 +48,15 @@ class Test_TestOsm_OsmXMLtoGeojson(unittest.TestCase):
     def test_osmxmltogeojson_not_valid_calledprocessederror(self):
         with mock.patch.object(
             osm.subprocess,
-            'run',
-            side_effect=osm.subprocess.CalledProcessError(returncode=1,
-                                                          cmd=["wrong"])):
-            content = bytes('''<?xml version="1.0" encoding="UTF-8"?>
+            "run",
+            side_effect=osm.subprocess.CalledProcessError(returncode=1, cmd=["wrong"]),
+        ):
+            content = bytes(
+                """<?xml version="1.0" encoding="UTF-8"?>
             <osm version="0.6" generator="CGImap 0.0.2">
-            </osm>''', 'utf-8')
+            </osm>""",
+                "utf-8",
+            )
             osmxmltogeojson = osm.OsmXMLtoGeojson("points")
             with self.assertRaises(RuntimeError):
                 next(osmxmltogeojson(content))
@@ -59,7 +64,7 @@ class Test_TestOsm_OsmXMLtoGeojson(unittest.TestCase):
     def test_osmxmltogeojson_valid(self):
         type_feature = "points"
         osmxmltogeojson = osm.OsmXMLtoGeojson(type_features="points")
-        string = '''<?xml version="1.0" encoding="UTF-8"?>
+        string = """<?xml version="1.0" encoding="UTF-8"?>
 
         <osm version="0.6" generator="CGImap 0.0.2">
 
@@ -73,9 +78,9 @@ class Test_TestOsm_OsmXMLtoGeojson(unittest.TestCase):
 
         </node>
 
-        </osm> '''
+        </osm> """
 
-        content = bytes(string, 'utf-8')
+        content = bytes(string, "utf-8")
         result = json.loads(next(osmxmltogeojson(content)))
         self.assertEqual(type_feature, result.get("name"))
         for row in result.get("features"):
@@ -102,10 +107,10 @@ class Test_TestOsm_Ogr2ogrGeojson2Geojson(unittest.TestCase):
     def test_ogr2ogrgeojson2geojson_non_valid_keyerror(self):
         ogr2ogrgeojson2geojson = osm.Ogr2ogrGeojson2Geojson()
         other_tags = '''"frequency"=>"50","gauge"=>"6666","layer"=>"19"'''
-        record = {'non_valid_key': other_tags}
+        record = {"non_valid_key": other_tags}
         result = next(ogr2ogrgeojson2geojson(record))
         self.assertEqual(result, record)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

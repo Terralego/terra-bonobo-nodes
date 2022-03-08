@@ -29,19 +29,18 @@ jobs:
 
     - name: Flake8 check
       run: |
-        flake8 terra_bonobo_nodes/ test_terra_bonobo_nodes/
+        flake8 terra_bonobo_nodes/ test_terra_bonobo_nodes/ tests/
 
     - name: Black check
       run: |
-        black --check terra_bonobo_nodes test_terra_bonobo_nodes
+        black --check terra_bonobo_nodes test_terra_bonobo_nodes tests/
 
     - name: Isort check
       run: |
-        isort -c --profile=black terra_bonobo_nodes/ test_terra_bonobo_nodes/
+        isort -c --profile=black terra_bonobo_nodes/ test_terra_bonobo_nodes/ tests/
 
   build:
     runs-on: ubuntu-18.04
-    needs: [lint]
     continue-on-error: ${{ matrix.experimental }}
     strategy:
       matrix:

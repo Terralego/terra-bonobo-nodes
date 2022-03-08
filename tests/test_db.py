@@ -1,6 +1,8 @@
-from terra_bonobo_nodes import db
 import unittest
+
 from geostore.models import Layer
+
+from terra_bonobo_nodes import db
 
 
 class Test_TestDB_KeyFloatTransform(unittest.TestCase):
@@ -12,12 +14,11 @@ class Test_TestDB_KeyFloatTransform(unittest.TestCase):
         properties = 5
         query = "SELECT"
         keyfloattransform = db.KeyFloatTransform(query, properties)
-        string_result, param_result = keyfloattransform.as_sql(
-            compiler, "properties")
-        self.assertEqual(param_result, (properties, 'SELECT'))
+        string_result, param_result = keyfloattransform.as_sql(compiler, "properties")
+        self.assertEqual(param_result, (properties, "SELECT"))
         self.assertIsInstance(string_result, str)
         self.assertIn("::float", string_result)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

@@ -8,12 +8,8 @@ from bonobo.constants import END, NOT_MODIFIED
 from bonobo.util.objects import ValueHolder
 from django.conf import settings
 from django.contrib.gis.db.models import Union
-from django.contrib.gis.db.models.functions import (
-    Distance,
-    Intersection,
-    MakeValid,
-    Transform,
-)
+from django.contrib.gis.db.models.functions import (Distance, Intersection,
+                                                    MakeValid, Transform)
 from django.contrib.gis.geos import GEOSGeometry
 from django.db import connection, transaction
 from geostore.models import Feature, FeatureQuerySet, Layer  # noqa

@@ -11,13 +11,13 @@ from bonobo.config.processors import ContextProcessor
 from bonobo.util.objects import ValueHolder
 from django.conf import settings
 from django.contrib.gis.db.models import Collect
-from django.contrib.gis.geos import GEOSGeometry, LineString, Point, Polygon  # noqa
+from django.contrib.gis.geos import (GEOSGeometry, LineString, Point,  # noqa
+                                     Polygon)
 from django.contrib.gis.geos.prototypes.io import wkt_w
 from django.contrib.postgres.aggregates import ArrayAgg
-from django.db.models import Count, Sum, FloatField
+from django.db.models import Count, FloatField, Sum
 from django.db.models.fields.json import KeyTextTransform
 from django.db.models.functions import Cast
-
 
 logger = logging.getLogger(__name__)
 
@@ -250,7 +250,11 @@ class CollectAndSum(Configurable):
             "ids": ArrayAgg("id", distinct=True),
             "point_count": Count("id"),
             **{
-                k: Sum(Cast(KeyTextTransform(field, "properties"), output_field=FloatField()))
+                k: Sum(
+                    Cast(
+                        KeyTextTransform(field, "properties"), output_field=FloatField()
+                    )
+                )
                 for k, field in self.sum_fields.items()
             },
         }

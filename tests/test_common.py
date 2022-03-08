@@ -1,34 +1,34 @@
 import csv
-from terra_bonobo_nodes import common
-import unittest
-from io import StringIO, BytesIO
 import json
-import requests
-from django.contrib.gis.geos import GEOSGeometry
-from bonobo.util.testing import BufferingNodeExecutionContext
+import unittest
+from io import BytesIO, StringIO
 from unittest import mock
+
+import requests
+from bonobo.util.testing import BufferingNodeExecutionContext
+from django.contrib.gis.geos import GEOSGeometry
 from django.test import override_settings
 from geostore.models import Feature, Layer
+
+from terra_bonobo_nodes import common
 
 
 class Test_TestCommon_CsvDictReader(unittest.TestCase):
     def test_csvdirectreader(self):
         csvfile = StringIO()
-        fieldnames = ['Test1']
+        fieldnames = ["Test1"]
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
         tableau = [
-            {'Test1': 'test1'},
-            {'Test1': "iklojlk"},
+            {"Test1": "test1"},
+            {"Test1": "iklojlk"},
         ]
         for i in tableau:
             writer.writerow(i)
         csvfile.seek(0)
         reader = csvfile.read()
         csvdictreader = common.CsvDictReader()
-        tableau_rendu_csvdictreader = [
-            row for row in csvdictreader(reader)
-        ]
+        tableau_rendu_csvdictreader = [row for row in csvdictreader(reader)]
         self.assertSequenceEqual(tableau_rendu_csvdictreader, tableau)
 
     def test_csvdirectreader_vide(self):
@@ -36,28 +36,40 @@ class Test_TestCommon_CsvDictReader(unittest.TestCase):
         csvfile.seek(0)
         reader = csvfile.read()
         csvdictreader = common.CsvDictReader()
-        tableau_rendu_csvdictreader = [
-            row for row in csvdictreader(reader)
-        ]
+        tableau_rendu_csvdictreader = [row for row in csvdictreader(reader)]
         self.assertSequenceEqual(tableau_rendu_csvdictreader, [])
 
     def test_dialect(self):
-        dialecte_expected = {'delimiter': ':', 'quotechar': '"', 'escapechar':
-                             'True', 'doublequote': 'False',
-                             'skipinitialspace': 'True',
-                             'lineterminator': '\n', 'quoting': 0}
+        dialecte_expected = {
+            "delimiter": ":",
+            "quotechar": '"',
+            "escapechar": "True",
+            "doublequote": "False",
+            "skipinitialspace": "True",
+            "lineterminator": "\n",
+            "quoting": 0,
+        }
         csvdictreader_dialect = common.CsvDictReader(**dialecte_expected)
-        self.assertDictEqual(dialecte_expected,
-                             csvdictreader_dialect.get_dialect_kwargs())
+        self.assertDictEqual(
+            dialecte_expected, csvdictreader_dialect.get_dialect_kwargs()
+        )
 
 
 class Test_TestCommon_GeojsonReader(unittest.TestCase):
     def setUp(self):
-        self.dict_crs = {'type': 'EPSG', 'properties': {
-                    'code': 4326, 'coordinate_order': [1, 0],
-                    'name': 'name_to_allow'}}
-        self.dict_raw_geojson_str = {'type': 'FeatureCollection', 'crs':
-                                     self.dict_crs, "features": []}
+        self.dict_crs = {
+            "type": "EPSG",
+            "properties": {
+                "code": 4326,
+                "coordinate_order": [1, 0],
+                "name": "name_to_allow",
+            },
+        }
+        self.dict_raw_geojson_str = {
+            "type": "FeatureCollection",
+            "crs": self.dict_crs,
+            "features": [],
+        }
         self.raw_geojson_str = json.dumps(self.dict_raw_geojson_str)
 
     def test_geojsonreader_error(self):
@@ -66,38 +78,39 @@ class Test_TestCommon_GeojsonReader(unittest.TestCase):
             next(geojsonreader(self.raw_geojson_str))
 
     def test_geojsonreader(self):
-        dic_geometry_1 = {'type': 'LineString', 'coordinates':
-                          [[102.0, 0.0], [103.0, 1.0],
-                           [104.0, 0.0], [105.0, 1.0]]}
-        dict_feature_1 = {'type': 'feature', "id": "id0",
-                          'geometry': dic_geometry_1, 'properties':
-                          {'prop0': 'value0', 'prop1': 'value1'}}
-        self.dict_crs.get("properties").update({"name":
-                                                'urn:ogc:def:crs:OGC:1.3:CRS84'
-                                                })
+        dic_geometry_1 = {
+            "type": "LineString",
+            "coordinates": [[102.0, 0.0], [103.0, 1.0], [104.0, 0.0], [105.0, 1.0]],
+        }
+        dict_feature_1 = {
+            "type": "feature",
+            "id": "id0",
+            "geometry": dic_geometry_1,
+            "properties": {"prop0": "value0", "prop1": "value1"},
+        }
+        self.dict_crs.get("properties").update(
+            {"name": "urn:ogc:def:crs:OGC:1.3:CRS84"}
+        )
         self.dict_crs.update({"properties": self.dict_crs.get("properties")})
         self.dict_raw_geojson_str.update({"features": [dict_feature_1]})
         self.dict_raw_geojson_str.update({"crs": self.dict_crs})
         raw_geojson_str = json.dumps(self.dict_raw_geojson_str)
         geojsonreader = common.GeojsonReader(geom="geom")
 
-        result_geo_array = [
-            row.get('geom')
-            for row in geojsonreader(raw_geojson_str)
-        ]
+        result_geo_array = [row.get("geom") for row in geojsonreader(raw_geojson_str)]
 
         expected_array = [
-            GEOSGeometry(json.dumps(row.get('geometry')))
-            for row in self.dict_raw_geojson_str.get('features')
+            GEOSGeometry(json.dumps(row.get("geometry")))
+            for row in self.dict_raw_geojson_str.get("features")
         ]
         self.assertSequenceEqual(expected_array, result_geo_array)
 
     def test_geojsonreader_empty(self):
-        name_allowed = self.dict_crs.get('properties').get('name')
-        geojsonreader = common.GeojsonReader(geom="geom",
-                                             allowed_projection=[name_allowed])
-        result_array = [
-            row for row in geojsonreader(self.raw_geojson_str)]
+        name_allowed = self.dict_crs.get("properties").get("name")
+        geojsonreader = common.GeojsonReader(
+            geom="geom", allowed_projection=[name_allowed]
+        )
+        result_array = [row for row in geojsonreader(self.raw_geojson_str)]
         array_expected = []
         self.assertSequenceEqual(result_array, array_expected)
 
@@ -106,13 +119,13 @@ class Test_TestCommon_IdentifierFromProperty(unittest.TestCase):
     def test_identifierfromproperty(self):
         id_property = "id_prop"
 
-        identifierproperty = common.IdentifierFromProperty(
-            property=id_property)
+        identifierproperty = common.IdentifierFromProperty(property=id_property)
 
         record_original = {
-            'test': 'identifierproperty',
-            id_property: 'property',
-            'other': 'try'}
+            "test": "identifierproperty",
+            id_property: "property",
+            "other": "try",
+        }
 
         identifier, record = identifierproperty(record_original)
 
@@ -122,7 +135,7 @@ class Test_TestCommon_IdentifierFromProperty(unittest.TestCase):
 
 class Test_TestCommon_GenerateIdentifier(unittest.TestCase):
     def setUp(self):
-        self.arguments = ('voici', 'les', 'arguments', 'de', 'tests')
+        self.arguments = ("voici", "les", "arguments", "de", "tests")
 
     def test_generateidentifier_empty(self):
         generate_identifier = common.GenerateIdentifier()
@@ -152,15 +165,15 @@ class Test_TestCommon_GenerateIdentifier(unittest.TestCase):
 
 class Test_TestCommon_ExcludeAttributes(unittest.TestCase):
     def test_excludeattributes(self):
-        list_to_exclude = ['member_to_exclude_1', 'member_to_exclude_2']
+        list_to_exclude = ["member_to_exclude_1", "member_to_exclude_2"]
         exclude_attributes = common.ExcludeAttributes(excluded=list_to_exclude)
         identifier = "id"
-        record = {'member_to_exclude_1': 'exclusion',
-                  'member_to_exclude_2': 'exclusion2',
-                  'member_to_stay': 'stay'
-                  }
-        array_res = [
-            row for row in exclude_attributes(identifier, record)]
+        record = {
+            "member_to_exclude_1": "exclusion",
+            "member_to_exclude_2": "exclusion2",
+            "member_to_stay": "stay",
+        }
+        array_res = [row for row in exclude_attributes(identifier, record)]
 
         record_keys = list(array_res[0][1].keys())
         self.assertNotEqual(list_to_exclude, record_keys)
@@ -170,12 +183,14 @@ class Test_TestCommon_ExcludeAttributes(unittest.TestCase):
 
 class Test_TestCommon_FilterAttributes(unittest.TestCase):
     def test_filterattributes(self):
-        list_to_filter = ['member_to_filter_1', 'member_to_filter_2']
+        list_to_filter = ["member_to_filter_1", "member_to_filter_2"]
         filterattributes = common.FilterAttributes(included=list_to_filter)
         identifier = "id"
-        record = {'member_to_filter_1': 'filter',
-                  'member_to_filter_2': 'filter2',
-                  'member_to_exclude': 'exclusion'}
+        record = {
+            "member_to_filter_1": "filter",
+            "member_to_filter_2": "filter2",
+            "member_to_exclude": "exclusion",
+        }
 
         result = [row for row in filterattributes(identifier, record)]
 
@@ -188,28 +203,27 @@ class Test_TestCommon_FilterAttributes(unittest.TestCase):
 class Test_TestCommon_FilterByProperties(unittest.TestCase):
     def setUp(self):
         self.identifier = "id"
-        self.record = {'key_1': 'value_1',
-                       'key_2': 'value_2'}
+        self.record = {"key_1": "value_1", "key_2": "value_2"}
 
     def test_filterbyproperties_false(self):
-        keep_eval_function = lambda identfier, record: False
+        keep_eval_function = lambda identfier, record: False  # NOQA -> TODO: fix flake8 error
 
         filterbyproperties = common.FilterByProperties(
-            keep_eval_function=keep_eval_function)
+            keep_eval_function=keep_eval_function
+        )
         filterbyproperties(self.identifier, self.record)
 
-        result = [
-            row for
-            row in filterbyproperties(self.identifier, self.record)]
+        result = [row for row in filterbyproperties(self.identifier, self.record)]
         expected_result = []
 
         self.assertSequenceEqual(result, expected_result)
 
     def test_filterbyproperties_true(self):
-        keep_eval_function = lambda identfier, record: True
+        keep_eval_function = lambda identfier, record: True  # NOQA -> TODO: fix flake8 error
 
         filterbyproperties = common.FilterByProperties(
-            keep_eval_function=keep_eval_function)
+            keep_eval_function=keep_eval_function
+        )
         filterbyproperties(self.identifier, self.record)
 
         result = next(filterbyproperties(self.identifier, self.record))
@@ -225,14 +239,14 @@ class Test_TestCommon_CollectAndSum(unittest.TestCase):
         identifier = "identifier"
 
         layercollectandsum = Layer.objects.create(name="layercollectandsum")
-        Feature.objects.create(geom=common.Point(2, 4),
-                               layer=layercollectandsum)
+        Feature.objects.create(geom=common.Point(2, 4), layer=layercollectandsum)
 
         features = Feature.objects.all()
 
-        collectandsum = common.CollectAndSum(
-            geom=geom)
-        id_result, features_result = next(collectandsum(identifier=identifier, features=features))
+        collectandsum = common.CollectAndSum(geom=geom)
+        id_result, features_result = next(
+            collectandsum(identifier=identifier, features=features)
+        )
         self.assertEqual(id_result, identifier)
         self.assertIn("ids", features_result)
         self.assertIn(geom, features_result)
@@ -242,8 +256,7 @@ class Test_TestCommon_CollectAndSum(unittest.TestCase):
 class Test_TestCommon_MapProperties(unittest.TestCase):
     def setUp(self):
         self.identifier = "id"
-        self.record = {'key_1': 'value_1',
-                       'key_2': 'value_2'}
+        self.record = {"key_1": "value_1", "key_2": "value_2"}
 
     def test_mapproperties(self):
         map_function = sorted
@@ -262,25 +275,39 @@ class Test_TestCommon_AttributeToGeometry(unittest.TestCase):
         self.identifier = "id"
         self.geom = "geom"
 
-        self.asso_attribute_1 = {"type": "Polygon",
-                                 "coordinates": [[[3.55, 51.08], [4.36, 50.73],
-                                                 [4.84, 50.85], [4.45, 51.30],
-                                                 [3.55, 51.08]]]}
+        self.asso_attribute_1 = {
+            "type": "Polygon",
+            "coordinates": [
+                [
+                    [3.55, 51.08],
+                    [4.36, 50.73],
+                    [4.84, 50.85],
+                    [4.45, 51.30],
+                    [3.55, 51.08],
+                ]
+            ],
+        }
 
-        self.asso_attribute_2 = {"type": "LineString",
-                                 "coordinates": [[100.0, 0.0], [101.0, 1.0]]}
+        self.asso_attribute_2 = {
+            "type": "LineString",
+            "coordinates": [[100.0, 0.0], [101.0, 1.0]],
+        }
 
         self.attribute_1 = "attribute_1"
         self.attribute_2 = "attribute_2"
-        self.record = {self.attribute_1: json.dumps(self.asso_attribute_1),
-                       self.attribute_2: json.dumps(self.asso_attribute_2)}
+        self.record = {
+            self.attribute_1: json.dumps(self.asso_attribute_1),
+            self.attribute_2: json.dumps(self.asso_attribute_2),
+        }
 
     def test_get_geosgeometry(self):
         attribute_to_geometry = common.AttributeToGeometry(
-            attribute=self.attribute_1, geom=self.geom)
+            attribute=self.attribute_1, geom=self.geom
+        )
 
         result = attribute_to_geometry.get_geosgeometry(
-            json.dumps(self.asso_attribute_1))
+            json.dumps(self.asso_attribute_1)
+        )
 
         srid_expected = 4326
         self.assertEqual(result.srid, srid_expected)
@@ -288,10 +315,10 @@ class Test_TestCommon_AttributeToGeometry(unittest.TestCase):
 
     def test_attributetogeometry(self):
         attribute_to_geometry = common.AttributeToGeometry(
-            attribute=self.attribute_1, geom=self.geom)
+            attribute=self.attribute_1, geom=self.geom
+        )
 
-        result = next(attribute_to_geometry(
-                      self.identifier, self.record))
+        result = next(attribute_to_geometry(self.identifier, self.record))
 
         result_expected_geom = self.asso_attribute_1.get("type")
         result_geom = result[1].get(self.geom).geom_type
@@ -303,9 +330,9 @@ class Test_TestCommon_AttributeToGeometry(unittest.TestCase):
 
     def test_attributetogeometry_linestring(self):
         attribute_to_geometry = common.AttributeToGeometry(
-            attribute=self.attribute_2, geom=self.geom)
-        result = next(attribute_to_geometry(
-                self.identifier, self.record))
+            attribute=self.attribute_2, geom=self.geom
+        )
+        result = next(attribute_to_geometry(self.identifier, self.record))
 
         result_expected_geom = self.asso_attribute_2.get("type")
         result_geom = result[1].get(self.geom).geom_type
@@ -328,10 +355,10 @@ class Test_TestCommon_AttributesToGeometry(unittest.TestCase):
 
     def test_attributestogeometry(self):
         attributestopointgeometry = common.AttributesToPointGeometry(
-            x=self.x, y=self.y,
-            geom=self.geom, srid=self.srid)
+            x=self.x, y=self.y, geom=self.geom, srid=self.srid
+        )
 
-        original_record = {'Key_1': self.attribute_1, 'Key_2': self.attribute_2}
+        original_record = {"Key_1": self.attribute_1, "Key_2": self.attribute_2}
 
         identifier, record = attributestopointgeometry(self.identifier, original_record)
 
@@ -344,14 +371,13 @@ class Test_TestCommon_AttributesToGeometry(unittest.TestCase):
 
     def test_attributestogeometry_error(self):
         attributestopointgeometry = common.AttributesToPointGeometry(
-            x=self.x, y=self.y,
-            geom=self.geom, srid=self.srid)
+            x=self.x, y=self.y, geom=self.geom, srid=self.srid
+        )
 
-        record = {'Key_1': "attribute_1", 'Key_2': self.attribute_2}
+        record = {"Key_1": "attribute_1", "Key_2": self.attribute_2}
 
         with self.assertRaises(ValueError):
-            next(attributestopointgeometry(self.identifier,
-                                           record))
+            next(attributestopointgeometry(self.identifier, record))
 
 
 class Test_TestCommon_GeometryToJson(unittest.TestCase):
@@ -362,16 +388,17 @@ class Test_TestCommon_GeometryToJson(unittest.TestCase):
         identifier = "id"
         example_geo = common.Point(0, 1)
 
-        geometrytojson = common.GeometryToJson(source=source,
-                                               destination=destination,
-                                               simplify=simplify)
+        geometrytojson = common.GeometryToJson(
+            source=source, destination=destination, simplify=simplify
+        )
         properties = {source: example_geo}
 
         r_identifier, record = geometrytojson(identifier, properties)
 
         self.assertEqual(identifier, r_identifier)
-        self.assertEqual(record.get(destination).get("type"),
-                         record.get(source).geom_type)
+        self.assertEqual(
+            record.get(destination).get("type"), record.get(source).geom_type
+        )
 
 
 class Test_TestCommon_GeometryToCentroid(unittest.TestCase):
@@ -382,8 +409,7 @@ class Test_TestCommon_GeometryToCentroid(unittest.TestCase):
         identifier = "id"
         properties = {geom: example_geo}
 
-        geometrytocentroid = common.GeometryToCentroid(
-            geom=geom, geom_dest=geom_dest)
+        geometrytocentroid = common.GeometryToCentroid(geom=geom, geom_dest=geom_dest)
         r_identifier, record = geometrytocentroid(identifier, properties)
 
         self.assertEqual(identifier, r_identifier)
@@ -398,10 +424,8 @@ class Test_TestCommon_Geometry3Dto2D(unittest.TestCase):
         example_geo = common.Point(1, 1, 1)
         properties = {geom: example_geo}
 
-        geometry3dto2d = common.Geometry3Dto2D(
-            geom=geom, geom_dest=geom_dest)
-        result = next(geometry3dto2d(identifier,
-                                     properties))
+        geometry3dto2d = common.Geometry3Dto2D(geom=geom, geom_dest=geom_dest)
+        result = next(geometry3dto2d(identifier, properties))
 
         result_geom_3d = result[1].get(geom)
         result_geom_2d = result[1].get(geom_dest)
@@ -419,8 +443,7 @@ class Test_TestCommon_CopyOnPipelineSplit(unittest.TestCase):
         properties = {geom: example_geo}
         identifier = "id"
         copyonpipelinesplit = common.CopyOnPipelineSplit()
-        result = next(copyonpipelinesplit(identifier,
-                                          properties))
+        result = next(copyonpipelinesplit(identifier, properties))
 
         self.assertEqual(identifier, result[0])
         self.assertEqual(2, len(result))
@@ -456,24 +479,39 @@ class Test_TestCommon_DjangoLog(unittest.TestCase):
             djangolog(identifier, record)
             self.assertEqual(cm.records[1].msg, f'{record["geom"].ewkt}')
             self.assertEqual(cm.records[1].levelno, log_level)
-            self.assertEqual(cm.records[0].msg, f'{identifier}: {record}')
+            self.assertEqual(cm.records[0].msg, f"{identifier}: {record}")
             self.assertEqual(cm.records[0].levelno, log_level)
             self.assertEqual(len(cm), 2)
 
 
 class Test_TestCommon_IsochroneCalculation(unittest.TestCase):
     def setUp(self):
-        self.body = {"polygons": [{"type": "Feature",
-                     "properties": {"name": "Research Triangle", "area": 252},
-                                   "geometry": {"type": "Polygon", "coordinates":
-                                                [[[-78.93, 36.00], [-78.67, 35.78],
-                                                 [-79.04, 35.90], [-78.93, 36.00]]]}}]}
+        self.body = {
+            "polygons": [
+                {
+                    "type": "Feature",
+                    "properties": {"name": "Research Triangle", "area": 252},
+                    "geometry": {
+                        "type": "Polygon",
+                        "coordinates": [
+                            [
+                                [-78.93, 36.00],
+                                [-78.67, 35.78],
+                                [-79.04, 35.90],
+                                [-78.93, 36.00],
+                            ]
+                        ],
+                    },
+                }
+            ]
+        }
 
     @override_settings(GRAPHHOPPER="http://graphopper/", DEBUG=True)
     def test_isochronecalculation_valid(self):
         request = requests.Session()
-        with mock.patch.object(request, 'get',
-                               return_value=mock.Mock(ok=True))as mock_get:
+        with mock.patch.object(
+            request, "get", return_value=mock.Mock(ok=True)
+        ) as mock_get:
             mock_get.return_value.json.return_value = self.body
 
             isochronecalculation = common.IsochroneCalculation()
@@ -482,9 +520,7 @@ class Test_TestCommon_IsochroneCalculation(unittest.TestCase):
 
             properties = {"geom": geom_example}
 
-            result = next(isochronecalculation(identifier,
-                                               properties,
-                                               request))
+            result = next(isochronecalculation(identifier, properties, request))
             self.assertEqual(identifier, result[0])
             self.assertEqual(2, len(result))
 
@@ -492,11 +528,13 @@ class Test_TestCommon_IsochroneCalculation(unittest.TestCase):
     def test_isochronecalculation_non_valid(self):
         request = requests.Session()
 
-        with mock.patch.object(request, 'get',
-                               return_value=mock.Mock(ok=True))as mock_get:
+        with mock.patch.object(
+            request, "get", return_value=mock.Mock(ok=True)
+        ) as mock_get:
 
             mock_get.return_value.json = mock.MagicMock(
-                side_effect=json.JSONDecodeError("test", "test2", 123))
+                side_effect=json.JSONDecodeError("test", "test2", 123)
+            )
 
             isochronecalculation = common.IsochroneCalculation()
             identifier = "id"
@@ -506,36 +544,25 @@ class Test_TestCommon_IsochroneCalculation(unittest.TestCase):
 
             try:
                 with self.assertLogs():
-                    next(isochronecalculation(identifier,
-                                              properties,
-                                              request))
+                    next(isochronecalculation(identifier, properties, request))
             except StopIteration:
                 pass
 
 
 class Test_TestCommon_UnionOnProperty(unittest.TestCase):
     def test_uniononproperty(self):
-        atr = 'atr'
-        properties = [{
-            'geom': common.Point(1, 0),
-            atr: 32
-        }, {
-            'geom': common.Point(2, 0),
-            atr: 33
-        }, {
-            'geom': common.Point(3, 0),
-            atr: 32
-        }, {
-            'geom': common.LineString([(0, 0), (1, 0)]),
-            atr: 32
-        }, {
-            'geom': common.Point(4, 0),
-            atr: 32
-        }
+        atr = "atr"
+        properties = [
+            {"geom": common.Point(1, 0), atr: 32},
+            {"geom": common.Point(2, 0), atr: 33},
+            {"geom": common.Point(3, 0), atr: 32},
+            {"geom": common.LineString([(0, 0), (1, 0)]), atr: 32},
+            {"geom": common.Point(4, 0), atr: 32},
         ]
 
-        with BufferingNodeExecutionContext(common.UnionOnProperty(
-                                        property=atr)) as context:
+        with BufferingNodeExecutionContext(
+            common.UnionOnProperty(property=atr)
+        ) as context:
             for row in properties:
                 context.write_sync(("id", row))
 
@@ -545,10 +572,9 @@ class Test_TestCommon_UnionOnProperty(unittest.TestCase):
             select_result = result.get(row.get(atr))
             select_result_geom = select_result.get("geom")
 
-            self.assertEqual(row.get(atr),
-                             select_result.get("level"))
+            self.assertEqual(row.get(atr), select_result.get("level"))
             self.assertTrue(select_result_geom.intersects(row.get("geom")))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
