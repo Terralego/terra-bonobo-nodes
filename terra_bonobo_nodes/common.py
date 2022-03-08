@@ -11,8 +11,7 @@ from bonobo.config.processors import ContextProcessor
 from bonobo.util.objects import ValueHolder
 from django.conf import settings
 from django.contrib.gis.db.models import Collect
-from django.contrib.gis.geos import (GEOSGeometry, LineString, Point,  # noqa
-                                     Polygon)
+from django.contrib.gis.geos import GEOSGeometry, LineString, Point, Polygon  # noqa
 from django.contrib.gis.geos.prototypes.io import wkt_w
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.db.models import Count, FloatField, Sum

@@ -206,7 +206,9 @@ class Test_TestCommon_FilterByProperties(unittest.TestCase):
         self.record = {"key_1": "value_1", "key_2": "value_2"}
 
     def test_filterbyproperties_false(self):
-        keep_eval_function = lambda identfier, record: False  # NOQA -> TODO: fix flake8 error
+        keep_eval_function = (
+            lambda identfier, record: False
+        )  # NOQA -> TODO: fix flake8 error
 
         filterbyproperties = common.FilterByProperties(
             keep_eval_function=keep_eval_function
@@ -219,7 +221,9 @@ class Test_TestCommon_FilterByProperties(unittest.TestCase):
         self.assertSequenceEqual(result, expected_result)
 
     def test_filterbyproperties_true(self):
-        keep_eval_function = lambda identfier, record: True  # NOQA -> TODO: fix flake8 error
+        keep_eval_function = (
+            lambda identfier, record: True
+        )  # NOQA -> TODO: fix flake8 error
 
         filterbyproperties = common.FilterByProperties(
             keep_eval_function=keep_eval_function
