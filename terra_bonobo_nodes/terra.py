@@ -14,7 +14,8 @@ from django.contrib.gis.db.models.functions import (
     MakeValid,
     Transform,
 )
-from django.core.serializers.json import json, DjangoJSONEncoder
+import json
+from django.core.serializers.json import DjangoJSONEncoder
 from django.contrib.gis.geos import GEOSGeometry
 from django.db import connection, transaction
 from geostore.models import Feature, FeatureQuerySet, Layer  # noqa
