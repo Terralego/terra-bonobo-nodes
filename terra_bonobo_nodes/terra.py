@@ -1,3 +1,4 @@
+import json
 import logging
 from copy import deepcopy
 from json import JSONDecodeError
@@ -14,9 +15,8 @@ from django.contrib.gis.db.models.functions import (
     MakeValid,
     Transform,
 )
-import json
-from django.core.serializers.json import DjangoJSONEncoder
 from django.contrib.gis.geos import GEOSGeometry
+from django.core.serializers.json import DjangoJSONEncoder
 from django.db import connection, transaction
 from geostore.models import Feature, FeatureQuerySet, Layer  # noqa
 from requests.compat import urljoin
