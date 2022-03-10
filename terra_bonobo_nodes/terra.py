@@ -165,14 +165,14 @@ class LoadFeatureInLayer(Configurable):
             return NOT_MODIFIED
 
     def _get_feature_object(self, identifier, record):
-        properties = json.dumps(record.copy(), cls=DjangoJSONEncoder)
+        properties = record.copy()
         geometry = properties.pop(self.geom, GEOS_EMPTY_POINT)
 
         return Feature(
             layer=self.write_layer,
             identifier=identifier,
             geom=geometry,
-            properties=properties,
+            properties=json.dumps(properties, cls=DjangoJSONEncoder),
         )
 
 
