@@ -3,6 +3,7 @@
 
   * Fix pytest dependency
   * Support django 3.2 , 4.0 and python 3.8, 3.9
+  * Use DjangoJSONEncoder to dumps json
 
 0.6.0 / 2021-09-22
 ==================

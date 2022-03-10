@@ -1,3 +1,4 @@
+import json
 import logging
 from copy import deepcopy
 from json import JSONDecodeError
@@ -15,6 +16,7 @@ from django.contrib.gis.db.models.functions import (
     Transform,
 )
 from django.contrib.gis.geos import GEOSGeometry
+from django.core.serializers.json import DjangoJSONEncoder
 from django.db import connection, transaction
 from geostore.models import Feature, FeatureQuerySet, Layer  # noqa
 from requests.compat import urljoin
@@ -170,7 +172,7 @@ class LoadFeatureInLayer(Configurable):
             layer=self.write_layer,
             identifier=identifier,
             geom=geometry,
-            properties=properties,
+            properties=json.dumps(properties, cls=DjangoJSONEncoder),
         )
 
 
